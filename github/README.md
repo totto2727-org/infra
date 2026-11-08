@@ -226,7 +226,30 @@ Ensure that the repository's CI produces this check before applying the policy.
 A push-triggered check on the same pull request head SHA can satisfy this requirement.
 Fork contributions need CI coverage in the base repository, and merge queues need `merge_group` coverage if enabled.
 
-Install the App for `totto2727-dotfiles` with access to `nix` and configure `githubOwners:totto2727DotfilesToken` in ESC as described in [Add another owner](#add-another-owner).
+Install the existing GitHub App for `totto2727-dotfiles` and grant access to `nix`.
+In the ESC environment `totto2727/github/production`, merge the following entries into the existing `values.tokens` and `values.pulumiConfig` mappings.
+Keep the existing `githubApp` credentials, `totto2727Org` token, and `githubOwners:totto2727OrgToken` mapping.
+This fragment extends the environment; it does not replace its full definition.
+
+```yaml
+values:
+  tokens:
+    totto2727Dotfiles:
+      fn::open::gh-login:
+        appId: ${githubApp.appId}
+        privateKey: ${githubApp.privateKey}
+        owner: totto2727-dotfiles
+        permissions:
+          administration: write
+          contents: write
+          metadata: read
+  pulumiConfig:
+    githubOwners:totto2727DotfilesToken: ${tokens.totto2727Dotfiles.accessToken}
+```
+
+The App ID and private key can be shared, but each owner needs its own installation token.
+No change to `Pulumi.production.yaml` is needed because the stack already uses `github/production`.
+Without `githubOwners:totto2727DotfilesToken`, the program stops at `requireSecret` before preview.
 Do not use another owner's installation token.
 Before deployment, separately authorize adoption and import the existing repository into `production` with logical name `repository-totto2727-dotfiles-nix`, import ID `nix`, and the `totto2727-dotfiles` Provider.
 Inspect existing rulesets and vulnerability alerts, and import matching resources that already exist.
