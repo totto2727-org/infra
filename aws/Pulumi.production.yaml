@@ -1,0 +1,11 @@
+environment:
+  - aws/production
+config:
+  aws:defaultTags:
+    tags:
+      environment: production
+      managed-by: pulumi
+      pulumi-project: aws
+      pulumi-stack: production
+      repository: totto2727-org/infra
+  aws:region: ap-northeast-1
