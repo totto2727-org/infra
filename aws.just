@@ -1,10 +1,10 @@
 default:
     @just --list --list-submodules
 
-[working-directory: 'aws']
+[working-directory('aws')]
 up:
-  pulumi up
+    pulumi up
 
-[working-directory: 'aws']
+[working-directory('aws')]
 preview:
-  pulumi preview
+    pulumi preview

@@ -1,10 +1,10 @@
 default:
     @just --list --list-submodules
 
-[working-directory: 'github']
+[working-directory('github')]
 up:
-  pulumi up
+    pulumi up
 
-[working-directory: 'github']
+[working-directory('github')]
 preview:
-  pulumi preview
+    pulumi preview
