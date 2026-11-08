@@ -1,0 +1,11 @@
+node_modules/
+.direnv/
+.cache/
+.vite-hooks/
+.env
+.env.*
+!.env.example
+secrets/
+tmp/
+*.local.*
+.DS_Store
