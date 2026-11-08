@@ -22,4 +22,3 @@ overrides:
 allowBuilds:
   esbuild: true
   protobufjs: false
-  vite-plus: false
