@@ -231,26 +231,6 @@ However, a shared App private key can issue tokens for all of that App's install
 If private keys must also be separate, create one App per owner and use its credentials in the corresponding ESC token entry.
 The Provider structure does not need to change.
 
-## `totto2727-dotfiles/nix`
-
-[`src/totto2727-dotfiles.ts`](./src/totto2727-dotfiles.ts) manages only [`totto2727-dotfiles/nix`](https://github.com/totto2727-dotfiles/nix) for this owner.
-It preserves the repository's public visibility, non-fork and non-template status, enabled Issues, empty description and homepage, and empty topics.
-The shared policy requires the GitHub Actions `check` status.
-Ensure that the repository's CI produces this check before applying the policy.
-A push-triggered check on the same pull request head SHA can satisfy this requirement.
-Fork contributions need CI coverage in the base repository, and merge queues need `merge_group` coverage if enabled.
-
-Use the complete ESC definition in [Configure Pulumi ESC](#2-configure-pulumi-esc) for both managed owners.
-The existing App must be installed in `totto2727-dotfiles` with access to `nix`.
-No change to `Pulumi.production.yaml` is needed because the stack already uses `github/production`.
-Without `githubOwners:totto2727DotfilesToken`, the program stops at `requireSecret` before preview.
-Do not use another owner's installation token.
-Before deployment, separately authorize adoption and import the existing repository into `production` with logical name `repository-totto2727-dotfiles-nix`, import ID `nix`, and the `totto2727-dotfiles` Provider.
-Inspect existing rulesets and vulnerability alerts, and import matching resources that already exist.
-The vulnerability-alert resource has logical name `vulnerability-alerts-totto2727-dotfiles-nix`.
-Preserve existing protection rules and verify that preview proposes no repository creation, replacement, deletion, visibility change, or renaming.
-Import and apply each require explicit authorization.
-
 ## Checks
 
 ```bash
