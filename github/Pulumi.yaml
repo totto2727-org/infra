@@ -1,0 +1,8 @@
+name: github
+description: Repository settings and default-branch policies for workspace repositories
+runtime:
+  name: nodejs
+  options:
+    typescript: false
+    nodeargs: --import vite-plus/register
+    packagemanager: pnpm
