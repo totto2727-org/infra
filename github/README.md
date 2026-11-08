@@ -46,6 +46,7 @@ After you create the App:
 3. Open **Install App** and select `totto2727-org`.
 4. Select **Only select repositories** and grant access to every repository in [`src/totto2727-org.ts`](./src/totto2727-org.ts).
 5. Complete the installation. App registration alone does not install the App.
+6. Install the same App in `totto2727-dotfiles` and grant access to `nix`.
 
 You can select **All repositories** instead if the App must access current and future repositories in that organization.
 With **Only select repositories**, update the installation access before you add another repository to Pulumi.
@@ -57,7 +58,7 @@ Create ESC project `github` and environment `production`.
 The full environment name is `totto2727/github/production`.
 The stack configuration in `Pulumi.production.yaml` already references `github/production`.
 
-Paste this definition into the ESC environment:
+Paste this complete definition for both managed owners into the ESC environment:
 
 ```yaml
 values:
@@ -78,8 +79,18 @@ values:
           administration: write
           contents: write
           metadata: read
+    totto2727Dotfiles:
+      fn::open::gh-login:
+        appId: ${githubApp.appId}
+        privateKey: ${githubApp.privateKey}
+        owner: totto2727-dotfiles
+        permissions:
+          administration: write
+          contents: write
+          metadata: read
   pulumiConfig:
     githubOwners:totto2727OrgToken: ${tokens.totto2727Org.accessToken}
+    githubOwners:totto2727DotfilesToken: ${tokens.totto2727Dotfiles.accessToken}
 ```
 
 Replace `123456` with the numeric App ID.
@@ -88,7 +99,10 @@ Keep the `fn::secret` wrapper and YAML indentation.
 Save the environment without copying the private key into source control or chat.
 
 ESC uses `gh-login` to issue an installation token with a one-hour lifetime.
-Pulumi reads the token through secret configuration `githubOwners:totto2727OrgToken` and passes it to the `totto2727-org` Provider.
+The App ID and private key are shared, but ESC issues a separate installation token for each owner.
+Pulumi reads each token through its `githubOwners` secret configuration key and passes it to that owner's Provider.
+Both keys are required because the program loads both owner modules.
+No token for `totto2727-archives` is needed until a module manages repositories for that owner.
 A PAT and a shared `GITHUB_TOKEN` environment variable are not required.
 The App private key remains a long-lived credential. Revoke and replace it when needed.
 
