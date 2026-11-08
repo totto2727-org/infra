@@ -37,14 +37,14 @@ pulumi stack select production --cwd github
 Preview the target project, review the changes, and apply manually:
 
 ```bash
-just aws-preview
-just aws-up
+just aws::preview
+just aws::up
 
-just cloudflare-preview
-just cloudflare-up
+just cloudflare::preview
+just cloudflare::up
 
-just github-preview
-just github-up
+just github::preview
+just github::up
 ```
 
 The root `Justfile` runs Pulumi in the corresponding project directory with its selected stack.

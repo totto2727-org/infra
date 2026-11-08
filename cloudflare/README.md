@@ -41,8 +41,8 @@ Select the production stack, preview the changes, and apply only after review:
 
 ```bash
 pulumi stack select production --cwd cloudflare
-just cloudflare-preview
-just cloudflare-up
+just cloudflare::preview
+just cloudflare::up
 ```
 
 ## Checks

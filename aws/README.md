@@ -96,8 +96,8 @@ Select the production stack, preview the changes, and apply only after review:
 
 ```bash
 pulumi stack select production --cwd aws
-just aws-preview
-just aws-up
+just aws::preview
+just aws::up
 ```
 
 ## Checks

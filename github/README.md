@@ -109,7 +109,7 @@ The App private key remains a long-lived credential. Revoke and replace it when 
 ## 3. Verify and deploy
 
 Select the production stack with `pulumi stack select production --cwd github`.
-Run `just github-preview` to check authentication and the proposed changes.
+Run `just github::preview` to check authentication and the proposed changes.
 For a preview that refreshes remote state and shows detailed differences, run:
 
 ```bash
@@ -123,7 +123,7 @@ Do not apply changes until authentication succeeds and you have reviewed the pre
 After approval, apply the reviewed changes:
 
 ```bash
-just github-up
+just github::up
 ```
 
 ## Add a repository
