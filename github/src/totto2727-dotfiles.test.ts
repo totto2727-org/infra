@@ -46,7 +46,7 @@ test('adopts only nix for the dotfiles owner with the shared required check', as
     expect(resource.provider).toContain('pulumi:providers:github::totto2727-dotfiles::id-totto2727-dotfiles')
   }
   expect(resources.find(({ name }) => name === 'repository-totto2727-dotfiles-nix')?.inputs).toMatchObject({
-    description: '',
+    description: 'Shared Nix development environments and GitHub Actions',
     fork: 'false',
     hasIssues: true,
     homepageUrl: '',

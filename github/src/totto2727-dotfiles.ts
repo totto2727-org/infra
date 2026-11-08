@@ -7,4 +7,6 @@ const createRepository = createRepositoryFactory(
   new pulumi.Config('githubOwners').requireSecret('totto2727DotfilesToken'),
 )
 
-export const nix = createRepository('nix')
+export const nix = createRepository('nix', {
+  description: 'Shared Nix development environments and GitHub Actions',
+})
