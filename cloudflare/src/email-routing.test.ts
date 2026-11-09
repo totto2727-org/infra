@@ -24,10 +24,14 @@ beforeAll(async () => {
   const monitor = getMonitor()
   if (!monitor) throw new Error('Pulumi mock monitor is required')
   const registration = vi.spyOn(monitor, 'registerResource')
-  const { emailRoutingCatchAll } = await import('./email-routing.ts')
-  const { promise, resolve } = Promise.withResolvers<void>()
-  emailRoutingCatchAll.id.apply(() => resolve())
-  await promise
+  const { emailRoutingCatchAll, emailRoutingSettings } = await import('./email-routing.ts')
+  await Promise.all(
+    [emailRoutingCatchAll, emailRoutingSettings].map((resource) => {
+      const { promise, resolve } = Promise.withResolvers<void>()
+      resource.id.apply(() => resolve())
+      return promise
+    }),
+  )
   for (const [request] of registration.mock.calls) {
     imports.push({ name: request.getName(), id: request.getImportid(), protect: request.getProtect() === true })
   }
@@ -39,14 +43,23 @@ afterAll(() => {
 })
 
 describe('Email Routing adoption', () => {
-  test('imports the existing catch-all using the zone ID, not its rule ID', () => {
+  test('imports settings and catch-all using the shared zone ID, not a rule ID', () => {
     expect(imports).toEqual([
+      { name: 'iac-prod-email-routing-settings', id: '502c8e36ae3b0e13da67e015e67c6b35', protect: true },
       { name: 'iac-prod-email-routing-catch-all', id: '502c8e36ae3b0e13da67e015e67c6b35', protect: true },
     ])
   })
 
-  test('preserves disabled drop and excludes duplicate rules, DNS management and routing enablement', () => {
+  test('preserves plus-addressing and disabled drop without duplicate DNS owners or rules', () => {
     expect(resources.map(({ type, name, inputs }) => ({ type, name, inputs }))).toEqual([
+      {
+        type: 'cloudflare:index/emailRoutingSettings:EmailRoutingSettings',
+        name: 'iac-prod-email-routing-settings',
+        inputs: {
+          zoneId: '502c8e36ae3b0e13da67e015e67c6b35',
+          supportSubaddress: true,
+        },
+      },
       {
         type: 'cloudflare:index/emailRoutingCatchAll:EmailRoutingCatchAll',
         name: 'iac-prod-email-routing-catch-all',
