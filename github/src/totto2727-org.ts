@@ -66,13 +66,17 @@ export const flowdeck = createRepository('flowdeck', {
 export const glossshift = createRepository('glossshift', {
   description: 'A macOS translation app and CLI with OpenAI-compatible providers and streaming output',
 })
-export const mdts = createRepository('mdts', { description: 'Application repository for the mdts project' }, [])
+export const mdts = createRepository('mdts', { description: 'Application repository for the mdts project' }, ['ci'])
 export const nixCache = createRepository(
   'nix-cache',
   {
     description: 'Authenticated Nix binary cache on Cloudflare Workers and R2',
   },
-  [],
+  [
+    'native (ubuntu-24.04, x86_64-linux)',
+    'native (ubuntu-24.04-arm, aarch64-linux)',
+    'native (macos-15, aarch64-darwin)',
+  ],
 )
 export const openConnector = createRepository(
   'open-connector',
