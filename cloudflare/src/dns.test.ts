@@ -24,9 +24,9 @@ beforeAll(async () => {
   const monitor = getMonitor()
   if (!monitor) throw new Error('Pulumi mock monitor is required')
   const registration = vi.spyOn(monitor, 'registerResource')
-  const { sharedDnsRecords } = await import('./dns.ts')
+  const { dmarc, apexSpf, emailSpf } = await import('./dns.ts')
   const { promise, resolve } = Promise.withResolvers<void>()
-  pulumi.all(sharedDnsRecords.map((record) => record.id)).apply(() => resolve())
+  pulumi.all([dmarc.id, apexSpf.id, emailSpf.id]).apply(() => resolve())
   await promise
   for (const [request] of registration.mock.calls) {
     imports.push({ name: request.getName(), id: request.getImportid(), protect: request.getProtect() === true })
@@ -39,7 +39,7 @@ afterAll(() => {
 })
 
 describe('Shared DNS adoption', () => {
-  test('imports and protects exactly the three independently manageable TXT records', () => {
+  test('imports and protects exactly the three independent TXT records', () => {
     expect(imports).toEqual([
       {
         name: 'iac-prod-dns-dmarc',
