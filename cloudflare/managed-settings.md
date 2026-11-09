@@ -65,6 +65,21 @@ This workflow does not authorize automatic deployment from CI.
 The investigation's `cf` OAuth authorization and the Pulumi ESC provider token are separate credentials.
 Additional `cf` Read grants do not expand the Pulumi token's permissions.
 
+## Follow-up Gateway privacy change
+
+After the current-settings adoption, the follow-up change enables `ZeroTrustGatewayLogging.redactPii` on the same protected resource.
+DNS, HTTP and L4 each keep `logAll: true` and `logBlocks: false`.
+AI Gateway logging and Gateway location settings do not change.
+
+Redaction reduces source IP, user and device identity, and request-context detail available for incident analysis and debugging.
+Accept this trade-off explicitly before applying the follow-up change.
+It does not promise deletion of stored PII, and reverting the setting cannot recover information omitted while redaction was enabled.
+
+First complete adoption and require a clean production refresh preview.
+Then require a preview with one in-place Gateway logging update whose only intended input change is `redactPii: false -> true`.
+Do not accept a create, replacement, deletion, or unrelated setting change.
+After a separately approved apply, verify the setting and all six logging-selection booleans without collecting bulk raw logs.
+
 ## Preview prerequisites
 
 The integrated adoption preview reached Cloudflare but failed with HTTP 403 on 40 distinct read endpoints using the Pulumi ESC provider token.

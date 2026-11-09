@@ -9,7 +9,7 @@ export const gatewayLogging = new cloudflare.ZeroTrustGatewayLogging(
   config.resourceName('gateway-logging'),
   {
     accountId: config.accountID,
-    redactPii: false,
+    redactPii: true,
     settingsByRuleType: {
       dns: { logAll: true, logBlocks: false },
       http: { logAll: true, logBlocks: false },

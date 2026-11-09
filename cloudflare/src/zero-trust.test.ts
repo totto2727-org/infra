@@ -35,7 +35,7 @@ beforeAll(async () => {
 
 afterAll(() => vi.unstubAllEnvs())
 
-test('imports only the existing Gateway logging policy without changing its privacy settings', () => {
+test('redacts PII while preserving the existing Gateway logging selection and identity', () => {
   expect(resources).toEqual([
     expect.objectContaining({
       custom: true,
@@ -44,7 +44,7 @@ test('imports only the existing Gateway logging policy without changing its priv
       type: 'cloudflare:index/zeroTrustGatewayLogging:ZeroTrustGatewayLogging',
       inputs: {
         accountId: 'test-account',
-        redactPii: false,
+        redactPii: true,
         settingsByRuleType: {
           dns: { logAll: true, logBlocks: false },
           http: { logAll: true, logBlocks: false },
