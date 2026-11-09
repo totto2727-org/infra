@@ -10,7 +10,16 @@ beforeAll(async () => {
   await pulumi.runtime.setMocks(
     {
       call: (args) => {
-        throw new Error(`Unexpected provider invocation: ${args.token}`)
+        switch (args.token) {
+          case 'cloudflare:index/getAccountRoles:getAccountRoles':
+            return { results: [{ name: 'Super Administrator - All Privileges', id: 'program-role' }] }
+          case 'cloudflare:index/getAccountPermissionGroups:getAccountPermissionGroups':
+            return { results: [{ name: 'Super Administrator - All Privileges', id: 'program-permission-group' }] }
+          case 'cloudflare:index/getResourceGroups:getResourceGroups':
+            return { results: [{ name: 'com.cloudflare.api.account.test-account', id: 'program-resource-group' }] }
+          default:
+            throw new Error(`Unexpected provider invocation: ${args.token}`)
+        }
       },
       newResource: (args) => {
         if (args.type.startsWith('cloudflare:')) resources.push(args)
@@ -69,6 +78,20 @@ describe('Cloudflare program ownership', () => {
       if ('zoneId' in inputs) expect(inputs.zoneId).toBe(zoneID)
       if ('zoneTag' in inputs) expect(inputs.zoneTag).toBe(zoneID)
     }
+  })
+
+  test('passes native lookup outputs through to the registered membership', () => {
+    const member = resources.find(({ type }) => type === 'cloudflare:index/accountMember:AccountMember')
+    expect(member?.inputs).toMatchObject({
+      roles: ['program-role'],
+      policies: [
+        {
+          access: 'allow',
+          permissionGroups: [{ id: 'program-permission-group' }],
+          resourceGroups: [{ id: 'program-resource-group' }],
+        },
+      ],
+    })
   })
 
   test('does not own application resources or unused Tunnel settings', () => {
