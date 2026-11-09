@@ -7,6 +7,7 @@ const tagType = 'cloudflare:index/zeroTrustAccessTag:ZeroTrustAccessTag'
 const identityProviderType = 'cloudflare:index/zeroTrustAccessIdentityProvider:ZeroTrustAccessIdentityProvider'
 const groupType = 'cloudflare:index/zeroTrustAccessGroup:ZeroTrustAccessGroup'
 const resources: pulumi.runtime.MockResourceArgs[] = []
+const resourceOptions = new Map<string, pulumi.CustomResourceOptions>()
 let outputs: {
   cloudflareOsAccessAudience: string
   cloudflareOsAccessDomain: string
@@ -33,19 +34,33 @@ beforeAll(async () => {
   pulumi.runtime.setAllConfig({})
   await pulumi.runtime.setMocks(mocks, 'cloudflare', 'production')
 
-  const stack = await import('../index.ts')
-  const { promise, resolve } = Promise.withResolvers<typeof outputs>()
-  pulumi
-    .all([
-      stack.cloudflareOsAccessAudience,
-      stack.cloudflareOsAccessDomain,
-      stack.projektorAccessAudience,
-      stack.projektorAccessDomain,
-    ])
-    .apply(([cloudflareOsAccessAudience, cloudflareOsAccessDomain, projektorAccessAudience, projektorAccessDomain]) => {
-      resolve({ cloudflareOsAccessAudience, cloudflareOsAccessDomain, projektorAccessAudience, projektorAccessDomain })
+  await pulumi.runtime.runInPulumiStack(async () => {
+    pulumi.runtime.registerStackTransformation((args) => {
+      if (args.type === applicationType || args.type === tagType) resourceOptions.set(args.name, args.opts)
+      return { props: args.props, opts: args.opts }
     })
-  outputs = await promise
+    const stack = await import('../index.ts')
+    const { promise, resolve } = Promise.withResolvers<typeof outputs>()
+    pulumi
+      .all([
+        stack.cloudflareOsAccessAudience,
+        stack.cloudflareOsAccessDomain,
+        stack.projektorAccessAudience,
+        stack.projektorAccessDomain,
+      ])
+      .apply(
+        ([cloudflareOsAccessAudience, cloudflareOsAccessDomain, projektorAccessAudience, projektorAccessDomain]) => {
+          resolve({
+            cloudflareOsAccessAudience,
+            cloudflareOsAccessDomain,
+            projektorAccessAudience,
+            projektorAccessDomain,
+          })
+        },
+      )
+    outputs = await promise
+    return {}
+  })
 })
 
 afterAll(() => {
@@ -85,14 +100,19 @@ describe('Deployment Access applications', () => {
     expect(resources.filter((resource) => resource.type === groupType)).toHaveLength(1)
   })
 
-  test('registers only the native passkey identity provider', () => {
+  test('preserves the passkey provider alongside the existing account OTP provider', () => {
     const providers = resources.filter((resource) => resource.type === identityProviderType)
-    expect(providers).toHaveLength(1)
+    expect(providers).toHaveLength(2)
     expect(providers.find((provider) => provider.name === 'iac-prod-passkeys-identity-provider')?.inputs).toEqual({
       accountId: 'test-account',
       config: { loginPageAutoPrompt: false },
       name: 'iac-prod-passkeys',
       type: 'passkeys',
+    })
+    expect(
+      providers.find((provider) => provider.name === 'iac-prod-one-time-pin-identity-provider')?.inputs,
+    ).toMatchObject({
+      type: 'onetimepin',
     })
   })
 
@@ -127,7 +147,19 @@ describe('Deployment Access applications', () => {
     ]
     const registeredTags = resources.filter((resource) => resource.type === tagType)
     expect(registeredTags).toHaveLength(tagNames.length)
-    expect(registeredTags).toMatchObject(tagNames.map((name) => ({ inputs: { accountId: 'test-account', name } })))
+    expect(registeredTags).toEqual(
+      ['environment', 'managedBy', 'pulumiProject', 'pulumiStack', 'repository'].map((key, index) =>
+        expect.objectContaining({
+          name: `iac-prod-access-tag-${key}`,
+          inputs: { accountId: 'test-account', name: tagNames[index] },
+        }),
+      ),
+    )
+    for (const resource of resources.filter(
+      (resource) => resource.type === tagType || resource.type === applicationType,
+    )) {
+      expect(resourceOptions.get(resource.name)?.protect).toBe(true)
+    }
     for (const application of resources.filter((resource) => resource.type === applicationType)) {
       expect(application.inputs).toMatchObject({ tags: tagNames })
     }
