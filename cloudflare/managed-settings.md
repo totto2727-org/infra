@@ -29,17 +29,18 @@ Automatic SSL mode remains authoritative for the observed SSL mode, so the progr
 These settings remain in place outside Pulumi until the installed provider can preserve them safely.
 Do not create replacements to work around an unsupported import or an incomplete input model.
 
-| Setting                               | Current ownership and limitation                                                                                                                                       |
-| ------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| AI Gateway BYOK                       | Existing `openai` and `opencode-go` key registrations remain manual. Keep key material in its existing secret store, never in Git.                                     |
-| AI Gateway Custom Provider            | Existing OpenCode Go definition remains manual. Provider `6.23.3` has no corresponding independent resource.                                                           |
-| Email Routing enablement and mail DNS | Existing apex and `email.totto2727.dev` enablement, MX, and DKIM remain service-owned. No `EmailRoutingDns` resource also owns the independently declared SPF records. |
-| Budget notification                   | Existing USD 10 threshold remains manual. Provider `6.23.3` cannot represent its `total_spend_dollars` filter.                                                         |
-| One-time PIN identity provider        | Existing identity provider remains unchanged. Do not approximate its unrepresented configuration with an empty object.                                                 |
-| Page Shield settings                  | Existing enablement remains manual. A policy resource is not a replacement for the settings object.                                                                    |
-| API Schema default mitigation         | Preserve `none` manually. `SchemaValidationSettings` does not support import in the installed provider.                                                                |
-| Web Analytics rule                    | Existing all-host and all-path auto-install rule remains in place. `WebAnalyticsRule` does not support import.                                                         |
-| Account and Zone DNS settings         | These are separate from individual DNS records and do not support import in the installed provider.                                                                    |
+| Setting                               | Current ownership and limitation                                                                                                                                                                                |
+| ------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| AI Gateway BYOK                       | Existing `openai` and `opencode-go` key registrations remain manual. Keep key material in its existing secret store, never in Git.                                                                              |
+| AI Gateway Custom Provider            | Existing OpenCode Go definition remains manual. Provider `6.23.3` has no corresponding independent resource.                                                                                                    |
+| Email Routing enablement and mail DNS | Existing apex and `email.totto2727.dev` enablement, MX, and DKIM remain service-owned. No `EmailRoutingDns` resource also owns the independently declared SPF records.                                          |
+| Budget notification                   | Existing USD 10 threshold remains manual. Provider `6.23.3` cannot represent its `total_spend_dollars` filter.                                                                                                  |
+| One-time PIN identity provider        | Existing identity provider remains unchanged. Do not approximate its unrepresented configuration with an empty object.                                                                                          |
+| Page Shield settings                  | Existing enablement remains manual. A policy resource is not a replacement for the settings object.                                                                                                             |
+| API Schema default mitigation         | Preserve `none` manually. `SchemaValidationSettings` does not support import in the installed provider.                                                                                                         |
+| Web Analytics rule                    | Existing all-host and all-path auto-install rule remains in place. `WebAnalyticsRule` does not support import.                                                                                                  |
+| Zero Trust organization and trust     | Existing disabled inactivity enforcement contains null action and threshold, which provider `6.23.3` cannot preserve with its required non-null inputs. Organization trust has no corresponding writable input. |
+| Account and Zone DNS settings         | These are separate from individual DNS records and do not support import in the installed provider.                                                                                                             |
 
 ## Excluded resources
 
@@ -63,6 +64,19 @@ A preview does not complete an import.
 This workflow does not authorize automatic deployment from CI.
 The investigation's `cf` OAuth authorization and the Pulumi ESC provider token are separate credentials.
 Additional `cf` Read grants do not expand the Pulumi token's permissions.
+
+## Preview prerequisites
+
+The integrated adoption preview reached Cloudflare but failed with HTTP 403 on 40 distinct read endpoints using the Pulumi ESC provider token.
+The remaining resources are not verified merely because their errors did not appear before the preview stopped.
+Update the existing token in `cloudflare/production` with resource-specific Read access before repeating the production preview.
+Keep the existing Access and AI Gateway grants, and do not substitute the investigation's separate `cf` OAuth credential.
+
+A baseline refresh also reported the existing `repository:totto2727-org/monorepo` Access tag as missing and proposed creating it again.
+A live tag listing confirmed that the tag exists and is attached to both applications.
+The provider's SDK places the slash in the tag name into the lookup URL without escaping it, consistent with the false not-found result.
+Do not recreate, rename, or remove this tag to make the preview pass.
+Resolve the provider lookup issue before accepting a refresh preview or recording the adoption in state.
 
 ## References
 
