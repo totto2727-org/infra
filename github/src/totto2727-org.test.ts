@@ -40,14 +40,7 @@ beforeAll(async () => {
 test.each([
   { repository: 'projektor', contexts: ['check'] },
   { repository: 'mdts', contexts: ['ci'] },
-  {
-    repository: 'nix-cache',
-    contexts: [
-      'native (ubuntu-24.04, x86_64-linux)',
-      'native (ubuntu-24.04-arm, aarch64-linux)',
-      'native (macos-15, aarch64-darwin)',
-    ],
-  },
+  { repository: 'nix-cache', contexts: ['check'] },
 ])('requires the current $repository CI checks without weakening branch protection', ({ repository, contexts }) => {
   expect(resources.find(({ name }) => name === `default-branch-totto2727-org-${repository}`)?.inputs).toMatchObject({
     conditions: { refName: { excludes: [], includes: ['~DEFAULT_BRANCH'] } },
