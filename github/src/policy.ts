@@ -22,7 +22,6 @@ export const repositorySettings: Omit<github.RepositoryArgs, 'name'> = {
   mergeCommitTitle: 'MERGE_MESSAGE',
   securityAndAnalysis: {
     secretScanning: { status: 'enabled' },
-    secretScanningNonProviderPatterns: { status: 'disabled' },
     secretScanningPushProtection: { status: 'enabled' },
   },
   topics: [],
