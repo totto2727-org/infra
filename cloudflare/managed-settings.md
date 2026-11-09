@@ -26,6 +26,14 @@ Native API list inputs, such as policy matchers and split-tunnel networks, remai
 Resources themselves are not created from configuration arrays or factories.
 Email Routing owns MX, DKIM and SPF records; only the independent DMARC record is declared as a `DnsRecord`.
 
+| Reference                                                    | Handling                                                                |
+| ------------------------------------------------------------ | ----------------------------------------------------------------------- |
+| IAM roles and permission/resource groups                     | Native data sources, exact names, unique match required                 |
+| Missing/ambiguous IAM names or retrieval limit reached       | Stop; no fallback ID                                                    |
+| Existing imports and centralized Zone identity               | Keep bootstrap identifiers                                              |
+| Gateway certificate, DNS allocation and DMARC report address | Keep service-issued values without a stable name                        |
+| IAM lookup acceptance                                        | Requires ESC account settings read access; production lookup unverified |
+
 ## Not managed
 
 | Setting                                                                        | Reason                 |
