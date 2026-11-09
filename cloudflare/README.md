@@ -17,7 +17,8 @@ Cloudflare Console → **My Profile → API Tokens → Create Token → Custom t
 | Account | AI Gateway                                            | Edit  |
 
 These permissions cover the existing Access and AI Gateway resources.
-Adoption also needs read access to the declared account settings, notifications, Zero Trust settings, Web Analytics site, DNS records, Email Routing rule, and Zone settings.
+Adoption also needs read access to the declared membership, account and DNS settings, Images variant, notifications, Zero Trust settings, Web Analytics site, DNS records, Email Routing settings and Zone settings.
+Native singleton resources without import support need their product-specific edit permission when first applied.
 Grant the corresponding edit permissions only for reviewed updates.
 Scope Zone permissions to `totto2727.dev`, and keep account permissions scoped to this account.
 Use the [Cloudflare permission reference](https://developers.cloudflare.com/fundamentals/api/reference/permissions/) to select the resource-specific permissions.
@@ -44,7 +45,7 @@ values:
 
 ## 3. Deploy
 
-For initial adoption, follow [Adopt without changing settings](./managed-settings.md#adopt-without-changing-settings) before running `up`.
+For initial adoption, follow the [adoption workflow](./managed-settings.md#adoption-workflow) before running `up`.
 A `cf` OAuth grant does not change the API token in Pulumi ESC.
 
 Select the production stack, preview the changes, and apply only after review:

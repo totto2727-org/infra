@@ -1,7 +1,7 @@
 import * as pulumi from '@pulumi/pulumi'
 import { afterAll, beforeAll, describe, expect, test, vi } from 'vite-plus/test'
 
-const zoneId = '502c8e36ae3b0e13da67e015e67c6b35'
+let zoneId: string
 const settingType = 'cloudflare:index/zoneSetting:ZoneSetting'
 const resources: pulumi.runtime.MockResourceArgs[] = []
 const options = new Map<string, pulumi.CustomResourceOptions>()
@@ -117,11 +117,57 @@ beforeAll(async () => {
       if (args.type.startsWith('cloudflare:')) options.set(args.name, args.opts)
       return { props: args.props, opts: args.opts }
     })
-    const { zoneSettings } = await import('./zone-settings.ts')
+    const config = await import('./config.ts')
+    zoneId = config.zoneID
+    const settings = await import('./zone-settings.ts')
     const { promise, resolve } = Promise.withResolvers<void>()
-    pulumi.all(zoneSettings.map((resource) => resource.id)).apply(() => {
-      resolve()
-    })
+    pulumi
+      .all([
+        settings.zoneAlwaysOnline.id,
+        settings.zoneAlwaysUseHttps.id,
+        settings.zoneAutomaticHttpsRewrites.id,
+        settings.zoneBrotli.id,
+        settings.zoneBrowserCacheTtl.id,
+        settings.zoneBrowserCheck.id,
+        settings.zoneCacheLevel.id,
+        settings.zoneChallengeTtl.id,
+        settings.zoneCiphers.id,
+        settings.zoneDevelopmentMode.id,
+        settings.zoneEarlyHints.id,
+        settings.zoneEmailObfuscation.id,
+        settings.zoneHotlinkProtection.id,
+        settings.zoneHttp3.id,
+        settings.zoneIpGeolocation.id,
+        settings.zoneIpv6.id,
+        settings.zoneMaxUpload.id,
+        settings.zoneMinTlsVersion.id,
+        settings.zoneMirage.id,
+        settings.zoneOpportunisticEncryption.id,
+        settings.zoneOpportunisticOnion.id,
+        settings.zoneOriginMaxHttpVersion.id,
+        settings.zoneOriginH2MaxStreams.id,
+        settings.zonePseudoIpv4.id,
+        settings.zoneRocketLoader.id,
+        settings.zoneSecurityHeader.id,
+        settings.zoneSecurityLevel.id,
+        settings.zoneServerSideExclude.id,
+        settings.zoneTls13.id,
+        settings.zoneWaf.id,
+        settings.zoneWebsockets.id,
+        settings.zoneDnssec.id,
+        settings.zoneUrlNormalization.id,
+        settings.zoneSmartTieredCache.id,
+        settings.zoneBotManagement.id,
+        settings.zoneManagedTransforms.id,
+        settings.zoneUniversalSsl.id,
+        settings.zoneAuthenticatedOriginPulls.id,
+        settings.zoneAutoOriginTlsKex.id,
+        settings.zoneOriginTlsCompliance.id,
+        settings.zoneCtAlerting.id,
+      ])
+      .apply(() => {
+        resolve()
+      })
     await promise
     return {}
   })

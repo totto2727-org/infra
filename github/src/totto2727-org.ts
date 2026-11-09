@@ -87,18 +87,14 @@ export const openConnector = createRepository(
   },
   ['Lint, Typecheck & Test'],
 )
-export const projektor = createRepository(
-  'projektor',
-  {
-    description: 'Self hosted Wiki + Jira-style AI native issue tracker on Cloudflare Workers',
-    fork: 'true',
-    hasIssues: false,
-    homepageUrl: 'https://tajd.github.io/projektor/',
-    sourceOwner: 'TAJD',
-    sourceRepo: 'projektor',
-  },
-  ['Test & type-check'],
-)
+export const projektor = createRepository('projektor', {
+  description: 'Self hosted Wiki + Jira-style AI native issue tracker on Cloudflare Workers',
+  fork: 'true',
+  hasIssues: false,
+  homepageUrl: 'https://tajd.github.io/projektor/',
+  sourceOwner: 'TAJD',
+  sourceRepo: 'projektor',
+})
 export const reylo = createRepository(
   'reylo',
   {
