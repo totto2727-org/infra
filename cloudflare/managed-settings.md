@@ -1,82 +1,92 @@
 # Shared Cloudflare settings
 
-This project owns account-wide settings and shared settings for `totto2727.dev`.
-Worker applications and their bindings, custom domains, and generated DNS records remain in their application repositories.
-The initial adoption preserves observed values and existing resource identities.
-Security and privacy changes belong in a separate follow-up pull request.
+This project owns shared settings for the account and `totto2727.dev`.
+The first pull request adopts observed settings, and the second changes Gateway log redaction.
+Resources have individual declarations, and account and Zone identifiers come from `src/config.ts`.
 
-## Resource ownership
+## Managed settings
 
-| Module                                                                                                 | Ownership                                                                                                |
-| ------------------------------------------------------------------------------------------------------ | -------------------------------------------------------------------------------------------------------- |
-| `src/access-application.ts`, `src/access-group.ts`, `src/access-policy.ts`, `src/identity-provider.ts` | Existing shared Access applications, tags, passkey group, policy, and identity provider                  |
-| `src/ai-gateway.ts`                                                                                    | Existing authenticated AI Gateway `iac-prod-ai-gateway` with log collection disabled                     |
-| `src/account-settings.ts`                                                                              | Account name and existing two-factor authentication requirement                                          |
-| `src/dns.ts`                                                                                           | Shared DMARC and SPF TXT records                                                                         |
-| `src/email-routing.ts`                                                                                 | Existing disabled drop catch-all, without a second owner for the same object from the rule-list endpoint |
-| `src/notifications.ts`                                                                                 | Existing Web Analytics email notification                                                                |
-| `src/zone-settings.ts`                                                                                 | Supported editable Zone settings and shared security settings, using their existing values               |
-| `src/zero-trust.ts`                                                                                    | Supported shared Zero Trust settings                                                                     |
-| `src/web-analytics.ts`                                                                                 | Zone-wide Web Analytics site, excluding Pages-owned sites                                                |
+| Module                                                                                                 | Settings                                                                                         |
+| ------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------ |
+| `src/access-application.ts`, `src/access-group.ts`, `src/access-policy.ts`, `src/identity-provider.ts` | Existing Access applications, ownership tags, passkey group, policy and identity provider        |
+| `src/ai-gateway.ts`                                                                                    | Authenticated AI Gateway with log collection disabled                                            |
+| `src/account-member.ts`                                                                                | Existing accepted account member and administrator assignment                                    |
+| `src/account-settings.ts`                                                                              | Account name and two-factor authentication requirement                                           |
+| `src/shared-assets.ts`                                                                                 | Existing Zone and the `public` image variant                                                     |
+| `src/dns.ts`                                                                                           | Independently managed DMARC TXT record                                                           |
+| `src/dns-settings.ts`                                                                                  | Account DNS defaults, Zone DNS settings and schema validation defaults                           |
+| `src/email-routing.ts`                                                                                 | Email Routing settings, apex/subdomain DNS controllers and catch-all rule                        |
+| `src/notifications.ts`                                                                                 | Web Analytics email notification                                                                 |
+| `src/zone-settings.ts`                                                                                 | Editable Zone settings, DNSSEC, URL normalization, cache, bots, managed headers and TLS settings |
+| `src/zero-trust.ts`                                                                                    | Gateway logging                                                                                  |
+| `src/zero-trust-settings.ts`                                                                           | Shared Gateway, DNS location, WARP, connectivity, DLP and identity settings                      |
+| `src/web-analytics.ts`                                                                                 | Zone-wide Web Analytics site                                                                     |
 
-Newly adopted resources use explicit `import` IDs and `protect: true`.
-Existing Access and AI Gateway resources keep their logical names and outputs.
-URL normalization has one owner: the normalization settings resource, not its backing managed ruleset.
-Automatic SSL mode remains authoritative for the observed SSL mode, so the program does not compete by setting `ssl` separately.
+Native API list inputs, such as policy matchers and split-tunnel networks, remain arrays.
+Resources themselves are not created from configuration arrays or factories.
+Email Routing owns MX, DKIM and SPF records; only the independent DMARC record is declared as a `DnsRecord`.
 
-## Manual exceptions
+## Not managed
 
-These settings remain in place outside Pulumi until the installed provider can preserve them safely.
-Do not create replacements to work around an unsupported import or an incomplete input model.
+| Setting                                                                        | Reason                 |
+| ------------------------------------------------------------------------------ | ---------------------- |
+| AI Gateway BYOK and Custom Provider                                            | Pulumiで管理不可       |
+| Budget notification threshold                                                  | Pulumiで管理不可       |
+| Page Shield enablement                                                         | Pulumiで管理不可       |
+| Organization trust, posture caching and end-user app creation controls         | Pulumiで管理不可       |
+| Disabled service-token inactivity with null action/threshold                   | Pulumiで管理不可       |
+| DNS location DNS64 and anonymized logging                                      | Pulumiで管理不可       |
+| WARP advanced controls and global disconnect                                   | Pulumiで管理不可       |
+| DLP validation timeout and SCIM group-member deprovisioning                    | Pulumiで管理不可       |
+| Automatic SSL mode controller                                                  | Pulumiで管理不可       |
+| Registrar renewal settings                                                     | Pulumiで管理不可       |
+| Existing Web Analytics all-host rule                                           | 既存IDの取り込み非対応 |
+| Worker bindings, custom domains, Pages sites and CNAMEs                        | 他アプリ管理           |
+| Worker DNS, Email Routing mail DNS and service-issued TLS/Gateway certificates | 自動生成               |
+| Cloudflare-managed ruleset catalogs and predefined network objects             | Cloudflare管理         |
+| Root redirect, origin and transform ruleset bodies                             | 設定内容未取得         |
+| Unavailable product configuration                                              | 未使用・調査制限       |
+| `openshell.totto2727.dev` and unused Tunnels                                   | 削除候補               |
 
-| Setting                               | Current ownership and limitation                                                                                                                                                                                |
-| ------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| AI Gateway BYOK                       | Existing `openai` and `opencode-go` key registrations remain manual. Keep key material in its existing secret store, never in Git.                                                                              |
-| AI Gateway Custom Provider            | Existing OpenCode Go definition remains manual. Provider `6.23.3` has no corresponding independent resource.                                                                                                    |
-| Email Routing enablement and mail DNS | Existing apex and `email.totto2727.dev` enablement, MX, and DKIM remain service-owned. No `EmailRoutingDns` resource also owns the independently declared SPF records.                                          |
-| Budget notification                   | Existing USD 10 threshold remains manual. Provider `6.23.3` cannot represent its `total_spend_dollars` filter.                                                                                                  |
-| One-time PIN identity provider        | Existing identity provider remains unchanged. Do not approximate its unrepresented configuration with an empty object.                                                                                          |
-| Page Shield settings                  | Existing enablement remains manual. A policy resource is not a replacement for the settings object.                                                                                                             |
-| API Schema default mitigation         | Preserve `none` manually. `SchemaValidationSettings` does not support import in the installed provider.                                                                                                         |
-| Web Analytics rule                    | Existing all-host and all-path auto-install rule remains in place. `WebAnalyticsRule` does not support import.                                                                                                  |
-| Zero Trust organization and trust     | Existing disabled inactivity enforcement contains null action and threshold, which provider `6.23.3` cannot preserve with its required non-null inputs. Organization trust has no corresponding writable input. |
-| Account and Zone DNS settings         | These are separate from individual DNS records and do not support import in the installed provider.                                                                                                             |
+「Pulumiで管理不可」は、使用中のCloudflare provider `6.23.3`で表現できない項目です。
+Unknown ruleset contents are not replaced with inferred empty rules.
+URL normalization owns its backing rules, and automatic SSL management owns the current SSL mode.
+Deletion candidates are excluded from adoption, not deleted by this program.
 
-## Excluded resources
+## Adoption workflow
 
-- Workers, bindings, KV, D1, R2, Durable Objects, Containers, Cron, and Secrets remain application-owned.
-- Worker-generated DNS and TLS, Pages custom domains and CNAMEs, and Flowdeck's application declarations are not duplicated here.
-- Cloudflare-managed ruleset catalogs are not user-owned rulesets.
-- Rulesets without a complete, verified rule representation are not reconstructed from metadata.
-- The `openshell` Tunnel DNS reference, account mTLS certificate, and Images variant remain unchanged while their ownership is unresolved.
-- Default network objects, predefined catalogs, unused products, registration lifecycle, billing, and contracts are outside adoption scope.
+| Resource lifecycle                                                      | Expected first preview                                                                  |
+| ----------------------------------------------------------------------- | --------------------------------------------------------------------------------------- |
+| Resources with native import support                                    | Import existing identity, without configuration changes                                 |
+| DNS, schema and device singleton settings without native import support | Create Pulumi state through the native provider's update endpoint using observed values |
+| Apex/subdomain Email Routing DNS controllers                            | Configure generated mail DNS through native Create; no zone-only import for subdomains  |
+| Existing Access and AI Gateway resources                                | Unchanged identities and outputs                                                        |
 
-## Adopt without changing settings
+All declared resources use `protect: true`.
+Protection blocks deletion and replacement, not in-place settings updates.
+A native singleton create is an initial settings write, not a read-only import.
+Email Routing DNS Create can rewrite generated mail DNS.
 
 1. Run `vp run ci` from the repository root.
-2. Run `pulumi preview --cwd cloudflare --stack totto2727/cloudflare/production --refresh=true --diff`.
-3. Require imports and unchanged resources only. Investigate any create, update, delete, replacement, missing resource, or input mismatch before proceeding.
-4. Review each import ID against the existing account or Zone resource.
-5. After approval, run the existing Cloudflare deployment recipe to record the imports in state.
-6. Preview again and require no resource changes before applying a follow-up policy change.
+2. Run `pulumi preview --cwd cloudflare --stack totto2727/cloudflare/production --refresh=true --diff` after the token prerequisite is resolved.
+3. Check every import ID and singleton create against the table above.
+4. Investigate other creates, updates, deletions, replacements and input mismatches.
+5. After approval, use the existing Cloudflare deployment recipe.
+6. Require a clean preview before applying the separate Gateway log-redaction change.
 
-A preview does not complete an import.
-This workflow does not authorize automatic deployment from CI.
-The investigation's `cf` OAuth authorization and the Pulumi ESC provider token are separate credentials.
-Additional `cf` Read grants do not expand the Pulumi token's permissions.
+No deployment or state import has been executed.
+Direct API scripts and custom REST providers are not used.
 
-## Preview prerequisites
+## Preview blockers
 
-The integrated adoption preview reached Cloudflare but failed with HTTP 403 on 40 distinct read endpoints using the Pulumi ESC provider token.
-The remaining resources are not verified merely because their errors did not appear before the preview stopped.
-Update the existing token in `cloudflare/production` with resource-specific Read access before repeating the production preview.
-Keep the existing Access and AI Gateway grants, and do not substitute the investigation's separate `cf` OAuth credential.
+| Blocker                                                                                   | Required action                                                                             |
+| ----------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------- |
+| Previous adoption preview returned HTTP 403 on 40 distinct read endpoints                 | Update the existing API token in Pulumi ESC `cloudflare/production`; retain existing grants |
+| Existing `repository:totto2727-org/monorepo` Access tag returned a false not-found result | Resolve the provider SDK's unescaped slash lookup; do not rename or recreate the tag        |
+| Expanded native declarations have not had a successful production preview                 | Review them after the token update; local mocks do not prove cloud acceptance               |
+| Email Routing DNS subdomain response is deprecated and unmodeled by the SDK               | Confirm native subdomain reconciliation during the first authorized production preview      |
 
-A baseline refresh also reported the existing `repository:totto2727-org/monorepo` Access tag as missing and proposed creating it again.
-A live tag listing confirmed that the tag exists and is attached to both applications.
-The provider's SDK places the slash in the tag name into the lookup URL without escaping it, consistent with the false not-found result.
-Do not recreate, rename, or remove this tag to make the preview pass.
-Resolve the provider lookup issue before accepting a refresh preview or recording the adoption in state.
+The separate `cf` OAuth grant does not expand the Pulumi ESC token.
 
 ## References
 
