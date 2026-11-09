@@ -8,6 +8,8 @@ if (Predicate.isNullish(accountID)) {
   throw new Error('required CLOUDFLARE_ACCOUNT_ID')
 }
 
+export const zoneID = '502c8e36ae3b0e13da67e015e67c6b35'
+
 const stack = pulumi.getStack()
 const environmentName = stack === 'production' ? 'prod' : stack
 
