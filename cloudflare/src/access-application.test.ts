@@ -17,7 +17,16 @@ let outputs: {
 
 const mocks: pulumi.runtime.Mocks = {
   call: (args) => {
-    throw new Error(`Unexpected provider invocation: ${args.token}`)
+    switch (args.token) {
+      case 'cloudflare:index/getAccountRoles:getAccountRoles':
+        return { results: [{ name: 'Super Administrator - All Privileges', id: 'access-test-role' }] }
+      case 'cloudflare:index/getAccountPermissionGroups:getAccountPermissionGroups':
+        return { results: [{ name: 'Super Administrator - All Privileges', id: 'access-test-permission-group' }] }
+      case 'cloudflare:index/getResourceGroups:getResourceGroups':
+        return { results: [{ name: 'com.cloudflare.api.account.test-account', id: 'access-test-resource-group' }] }
+      default:
+        throw new Error(`Unexpected provider invocation: ${args.token}`)
+    }
   },
   newResource: (args) => {
     resources.push(args)

@@ -3,13 +3,34 @@ import { afterAll, beforeAll, describe, expect, test, vi } from 'vite-plus/test'
 
 const resources: pulumi.runtime.MockResourceArgs[] = []
 const options: pulumi.CustomResourceOptions[] = []
+const calls: pulumi.runtime.MockCallArgs[] = []
 
 beforeAll(async () => {
   vi.stubEnv('CLOUDFLARE_ACCOUNT_ID', '5643a837ef66765e7881c0831a36ebed')
   await pulumi.runtime.setMocks(
     {
       call: (args) => {
-        throw new Error(`Unexpected provider invocation: ${args.token}`)
+        calls.push(args)
+        switch (args.token) {
+          case 'cloudflare:index/getAccountRoles:getAccountRoles':
+            return {
+              results: [
+                { name: 'Administrator', id: 'unrelated-role' },
+                { name: 'Super Administrator - All Privileges', id: 'resolved-role' },
+              ],
+            }
+          case 'cloudflare:index/getAccountPermissionGroups:getAccountPermissionGroups':
+            return { results: [{ name: 'Super Administrator - All Privileges', id: 'resolved-permission-group' }] }
+          case 'cloudflare:index/getResourceGroups:getResourceGroups':
+            return {
+              results: [
+                { name: 'com.cloudflare.api.account.other', id: 'unrelated-scope' },
+                { name: 'com.cloudflare.api.account.5643a837ef66765e7881c0831a36ebed', id: 'resolved-resource-group' },
+              ],
+            }
+          default:
+            throw new Error(`Unexpected provider invocation: ${args.token}`)
+        }
       },
       newResource: (args) => {
         if (args.custom) resources.push(args)
@@ -35,7 +56,7 @@ afterAll(() => {
 })
 
 describe('Existing account membership', () => {
-  test('preserves the accepted administrator and exact role and policy assignments', () => {
+  test('assigns provider-resolved IDs while preserving the accepted administrator', () => {
     expect(resources).toHaveLength(1)
     expect(resources[0]).toMatchObject({
       type: 'cloudflare:index/accountMember:AccountMember',
@@ -46,15 +67,43 @@ describe('Existing account membership', () => {
       accountId: '5643a837ef66765e7881c0831a36ebed',
       email: 'kaihatu.totto2727@gmail.com',
       status: 'accepted',
-      roles: ['33666b9c79b9a5273fc7344ff42f953d'],
+      roles: ['resolved-role'],
       policies: [
         {
           access: 'allow',
-          permissionGroups: [{ id: '8e23b19e4e0d44c29d239c5688ba8cbb' }],
-          resourceGroups: [{ id: 'f4b2044943cc427693c60781a4c99ece' }],
+          permissionGroups: [{ id: 'resolved-permission-group' }],
+          resourceGroups: [{ id: 'resolved-resource-group' }],
         },
       ],
     })
+  })
+
+  test('looks up exact names within the configured account', () => {
+    expect(calls).toHaveLength(3)
+    expect(calls).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          token: 'cloudflare:index/getAccountRoles:getAccountRoles',
+          inputs: { accountId: '5643a837ef66765e7881c0831a36ebed', maxItems: 1000 },
+        }),
+        expect.objectContaining({
+          token: 'cloudflare:index/getAccountPermissionGroups:getAccountPermissionGroups',
+          inputs: {
+            accountId: '5643a837ef66765e7881c0831a36ebed',
+            name: 'Super Administrator - All Privileges',
+            maxItems: 1000,
+          },
+        }),
+        expect.objectContaining({
+          token: 'cloudflare:index/getResourceGroups:getResourceGroups',
+          inputs: {
+            accountId: '5643a837ef66765e7881c0831a36ebed',
+            name: 'com.cloudflare.api.account.5643a837ef66765e7881c0831a36ebed',
+            maxItems: 1000,
+          },
+        }),
+      ]),
+    )
   })
 
   test('imports and protects the existing membership without creating built-in groups', () => {
