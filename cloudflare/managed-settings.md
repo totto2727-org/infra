@@ -1,7 +1,6 @@
 # Shared Cloudflare settings
 
 This project owns shared settings for the account and `totto2727.dev`.
-The baseline adopts observed settings; the approved DNSSEC enablement is a separate change.
 Resources have individual declarations, and account and Zone identifiers come from `src/config.ts`.
 
 ## Managed settings
@@ -65,7 +64,7 @@ Deletion candidates are excluded from adoption, not deleted by this program.
 
 | Resource lifecycle                                                      | Expected first preview                                                                  |
 | ----------------------------------------------------------------------- | --------------------------------------------------------------------------------------- |
-| Resources with native import support                                    | Import existing identity; DNSSEC intentionally changes from disabled to active          |
+| Resources with native import support                                    | Import existing identity; review any settings updates                                   |
 | DNS, schema and device singleton settings without native import support | Create Pulumi state through the native provider's update endpoint using observed values |
 | Apex/subdomain Email Routing DNS controllers                            | Configure generated mail DNS through native Create; no zone-only import for subdomains  |
 | Existing Access and AI Gateway resources                                | Unchanged identities and outputs                                                        |
@@ -85,30 +84,6 @@ Email Routing DNS Create can rewrite generated mail DNS.
 No deployment or state import has been executed.
 Direct API scripts and custom REST providers are not used.
 
-## DNSSEC enablement
-
-`zoneDnssec` requests `status: 'active'` for the existing `totto2727.dev` Zone, retaining its import identity and deletion protection.
-No other setting is hardened by this change.
-The 2026-11-10 production state export did not contain this resource, so review its initial import and status update before applying.
-Do not treat the first import as an already completed deployment.
-
-After resolving the preview blockers below, use a DNSSEC-only preview rather than applying the unrelated initial adoption changes:
-
-```bash
-pulumi preview --cwd cloudflare --stack totto2727/cloudflare/production --refresh=true --diff \
-  --target 'urn:pulumi:production::cloudflare::cloudflare:index/zoneDnssec:ZoneDnssec::iac-prod-zone-dnssec'
-```
-
-The target limits resource updates, but the full program still evaluates provider data sources.
-Stop if the preview cannot read the existing resource, reports an import mismatch, or proposes deletion or replacement.
-Apply only the reviewed target through the same Pulumi workflow; do not run an unrestricted `up` for this change.
-
-Cloudflare Registrar automatically publishes the parent DS record; do not declare a second DS record in this Zone.
-Publication can take one to two days, so an enabled Zone setting alone does not establish a working chain of trust.
-After applying, verify the parent DS against the authoritative DNSKEY, check signed A/AAAA and MX answers through validating resolvers, and require a clean DNSSEC-only preview.
-If validation fails, investigate the DS and signing state rather than immediately disabling signing while a parent DS remains cached.
-Production preview, application and parent DS validation remain unverified until the token prerequisite is resolved.
-
 ## Preview blockers
 
 | Blocker                                                                                   | Required action                                                                             |
@@ -125,4 +100,3 @@ The separate `cf` OAuth grant does not expand the Pulumi ESC token.
 - [Pulumi resource imports](https://www.pulumi.com/docs/iac/concepts/resources/options/import/)
 - [Cloudflare provider resources](https://www.pulumi.com/registry/packages/cloudflare/api-docs/)
 - [Cloudflare API permissions](https://developers.cloudflare.com/fundamentals/api/reference/permissions/)
-- [Cloudflare DNSSEC activation, automatic Registrar DS publication and rollback](https://developers.cloudflare.com/dns/dnssec/)
