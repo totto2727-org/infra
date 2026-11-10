@@ -121,7 +121,7 @@ Run `just github-preview` to check authentication and the proposed changes.
 For a preview that refreshes remote state and shows detailed differences, run:
 
 ```bash
-pulumi preview --cwd github --stack production --refresh --diff
+pulumi preview --cwd github --stack production --refresh --run-program --diff
 ```
 
 If ESC reports `the GitHub App is not installed for owner`, check the installation target and App ID.
