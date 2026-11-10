@@ -1,7 +1,7 @@
 import * as pulumi from '@pulumi/pulumi'
 import { expect, test } from 'vite-plus/test'
 
-test('loads the complete stack with only the two managed organizations and preserves repository resource identities', async () => {
+test('loads both organizations and all repositories without creating teams or changing access grants', async () => {
   const resources: pulumi.runtime.MockResourceArgs[] = []
   await pulumi.runtime.setMocks(
     {
@@ -11,7 +11,7 @@ test('loads the complete stack with only the two managed organizations and prese
       newResource: (args) => {
         resources.push(args)
         // oxlint-disable-next-line typescript/no-unsafe-assignment -- Pulumi mock inputs must be echoed as resource state.
-        return { id: `id-${args.name}`, state: { ...args.inputs, slug: 'maintainers' } }
+        return { id: `id-${args.name}`, state: args.inputs }
       },
     },
     'github',
@@ -29,24 +29,15 @@ test('loads the complete stack with only the two managed organizations and prese
   const { promise, resolve } = Promise.withResolvers<string[]>()
   pulumi
     .all([
-      ...stack.organizationIds,
-      ...stack.maintainerTeamIds,
+      ...Object.values(stack.organizationIds),
       ...stack.rulesetIds,
       ...stack.vulnerabilityAlertIds,
-      ...Object.values(organizations).flatMap(({ teamMembers, teamRepositories, workflowPermissions }) => [
-        teamMembers.id,
-        workflowPermissions.id,
-        ...teamRepositories.map(({ id }) => id),
-      ]),
+      ...Object.values(organizations).map(({ workflowPermissions }) => workflowPermissions.id),
     ])
     .apply((ids) => resolve(ids))
   const ids = await promise
-  expect(ids.slice(0, 4)).toEqual([
-    'id-organization-totto2727-org',
-    'id-organization-totto2727-dotfiles',
-    'id-maintainers-totto2727-org',
-    'id-maintainers-totto2727-dotfiles',
-  ])
+  expect(ids.slice(0, 2)).toEqual(['id-organization-totto2727-org', 'id-organization-totto2727-dotfiles'])
+  expect(Object.keys(stack.organizationIds)).toEqual(['totto2727-org', 'totto2727-dotfiles'])
 
   const providers = resources.filter(({ type }) => type === 'pulumi:providers:github')
   expect(providers.map(({ name }) => name).toSorted()).toEqual(['totto2727-dotfiles', 'totto2727-org'])
@@ -59,25 +50,19 @@ test('loads the complete stack with only the two managed organizations and prese
   }
   const repositories = resources.filter(({ type }) => type === 'github:index/repository:Repository')
   expect(repositories).toHaveLength(38)
-  const grants = resources.filter(({ type }) => type === 'github:index/teamRepository:TeamRepository')
-  expect(grants).toHaveLength(repositories.length)
+  expect(resources.filter(({ type }) => type === 'github:index/team:Team')).toHaveLength(0)
+  expect(resources.filter(({ type }) => type === 'github:index/teamMembers:TeamMembers')).toHaveLength(0)
+  expect(resources.filter(({ type }) => type === 'github:index/teamRepository:TeamRepository')).toHaveLength(0)
+  expect(resources.filter(({ type }) => type === 'github:index/membership:Membership')).toHaveLength(0)
   for (const repository of repositories) {
-    const grant = grants.find(
-      ({ inputs, provider }) => inputs['repository'] === repository.inputs['name'] && provider === repository.provider,
-    )
-    expect(grant?.inputs['permission']).toBe('push')
     expect(repository.name).toBe(
       `repository-${repository.inputs['name'] === 'nix' ? 'totto2727-dotfiles' : 'totto2727-org'}-${repository.inputs['name']}`,
     )
   }
-  expect(resources.find(({ name }) => name === 'maintainers-members-totto2727-org')?.inputs['members']).toEqual([
-    { role: 'maintainer', username: 'totto2727' },
-    { role: 'member', username: 'totto2727-ai' },
-  ])
-  expect(resources.find(({ name }) => name === 'maintainers-members-totto2727-dotfiles')?.inputs['members']).toEqual([
-    { role: 'maintainer', username: 'totto2727' },
-    { role: 'member', username: 'totto2727-ai' },
-  ])
+  expect(resources.filter(({ type }) => type === 'github:index/repositoryRuleset:RepositoryRuleset')).toHaveLength(38)
+  expect(
+    resources.filter(({ type }) => type === 'github:index/repositoryVulnerabilityAlerts:RepositoryVulnerabilityAlerts'),
+  ).toHaveLength(38)
   expect(new Set(resources.map(({ name }) => name)).size).toBe(resources.length)
   expect(resources.some(({ name }) => name.includes('archive'))).toBe(false)
   expect(

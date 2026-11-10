@@ -9,5 +9,7 @@ export const rulesetIds = Object.values(repositories).map(({ ruleset }) => rules
 export const vulnerabilityAlertIds = Object.values(repositories).map(
   ({ vulnerabilityAlerts }) => vulnerabilityAlerts.id,
 )
-export const organizationIds = [totto2727Org.settings.id, totto2727Dotfiles.settings.id]
-export const maintainerTeamIds = [totto2727Org.team.id, totto2727Dotfiles.team.id]
+export const organizationIds = {
+  'totto2727-org': totto2727Org.settings.id,
+  'totto2727-dotfiles': totto2727Dotfiles.settings.id,
+}

@@ -143,7 +143,7 @@ The [Actions workflow permissions import ID](https://www.pulumi.com/registry/pac
 No separate manifest or permanent import task is needed.
 
 - Review inherited access before changing the base repository permission. Grants for declared repositories do not preserve access to undeclared private repositories.
-- Review team roster changes. `TeamMembers` removes unlisted users from the managed team, not from the organization.
+- Existing teams, memberships, and repository access grants remain unchanged and outside this stack.
 - The installed provider's organization-settings resource does not expose 2FA requirements, PAT policies, OAuth App restrictions, or all member-privilege controls. Review these in GitHub settings. Check affected accounts before enforcing 2FA because noncompliant accounts can lose access.
 - SAML, SCIM, team synchronization, and IP allow lists have plan or identity-provider prerequisites. No paid services are enrolled by this stack.
 - Actions allowlists and mandatory SHA pinning are not enforced here. Migrate mutable action references and verify workflow compatibility before enabling them.

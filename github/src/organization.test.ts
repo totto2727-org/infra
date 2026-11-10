@@ -4,7 +4,7 @@ import { expect, test } from 'vite-plus/test'
 
 import { createOrganization, organizationSettings } from './organization.ts'
 
-test('unifies organization policy, preserves owner isolation, and grants only explicit repository write access', async () => {
+test('unifies organization policy and preserves owner isolation without managing membership or grants', async () => {
   const resources: pulumi.runtime.MockResourceArgs[] = []
   await pulumi.runtime.setMocks(
     {
@@ -14,7 +14,7 @@ test('unifies organization policy, preserves owner isolation, and grants only ex
       newResource: (args) => {
         resources.push(args)
         // oxlint-disable-next-line typescript/no-unsafe-assignment -- Pulumi mock inputs must be echoed as resource state.
-        return { id: `id-${args.name}`, state: { ...args.inputs, slug: 'maintainers' } }
+        return { id: `id-${args.name}`, state: args.inputs }
       },
     },
     'github',
@@ -22,26 +22,15 @@ test('unifies organization policy, preserves owner isolation, and grants only ex
   )
   const organizations = (['totto2727-org', 'totto2727-dotfiles'] as const).map((owner) => {
     const provider = new github.Provider(owner, { owner, token: pulumi.secret(`test-${owner}-token`) })
-    const repository = new github.Repository(`repository-${owner}-shared-name`, { name: 'shared-name' }, { provider })
     return createOrganization({
       billingEmail: pulumi.secret(`billing-${owner}@example.invalid`),
-      members: [{ username: 'totto2727', role: 'maintainer' }],
       owner,
       provider,
-      repositories: { shared: repository },
     })
   })
   const { promise, resolve } = Promise.withResolvers<boolean>()
   pulumi
-    .all(
-      organizations.flatMap(({ settings, team, teamMembers, teamRepositories, workflowPermissions }) => [
-        settings.id,
-        team.id,
-        teamMembers.id,
-        workflowPermissions.id,
-        ...teamRepositories.map(({ id }) => id),
-      ]),
-    )
+    .all(organizations.flatMap(({ settings, workflowPermissions }) => [settings.id, workflowPermissions.id]))
     .apply(() => resolve(true))
   await promise
 
@@ -53,19 +42,6 @@ test('unifies organization policy, preserves owner isolation, and grants only ex
         [pulumi.runtime.specialSigKey]: pulumi.runtime.specialSecretSig,
         value: `billing-${owner}@example.invalid`,
       },
-    })
-    expect(resources.find(({ name }) => name === `maintainers-${owner}`)?.inputs).toMatchObject({
-      name: 'maintainers',
-      privacy: 'secret',
-    })
-    expect(resources.find(({ name }) => name === `maintainers-members-${owner}`)?.inputs).toMatchObject({
-      teamSlug: 'maintainers',
-      members: [{ username: 'totto2727', role: 'maintainer' }],
-    })
-    expect(resources.find(({ name }) => name === `maintainers-${owner}-shared`)?.inputs).toMatchObject({
-      permission: 'push',
-      repository: 'shared-name',
-      teamId: `id-maintainers-${owner}`,
     })
     expect(resources.find(({ name }) => name === `workflow-permissions-${owner}`)?.inputs).toMatchObject({
       canApprovePullRequestReviews: false,
@@ -93,7 +69,14 @@ test('unifies organization policy, preserves owner isolation, and grants only ex
     }
   }
   expect(resources.some(({ name }) => name.includes('archive'))).toBe(false)
-  expect(resources.filter(({ type }) => type === 'github:index/membership:Membership')).toHaveLength(0)
+  expect(resources.map(({ type }) => type).toSorted()).toEqual([
+    'github:index/actionsOrganizationWorkflowPermissions:ActionsOrganizationWorkflowPermissions',
+    'github:index/actionsOrganizationWorkflowPermissions:ActionsOrganizationWorkflowPermissions',
+    'github:index/organizationSettings:OrganizationSettings',
+    'github:index/organizationSettings:OrganizationSettings',
+    'pulumi:providers:github',
+    'pulumi:providers:github',
+  ])
 })
 
 test('uses least privilege and free security defaults without enabling paid Advanced Security', () => {

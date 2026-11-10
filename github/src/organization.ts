@@ -24,40 +24,17 @@ export const createOrganization = ({
   owner,
   provider,
   billingEmail,
-  members,
-  repositories,
 }: {
   owner: 'totto2727-org' | 'totto2727-dotfiles'
   provider: github.Provider
   billingEmail: pulumi.Input<string>
-  members: github.types.input.TeamMembersMember[]
-  repositories: Record<string, github.Repository>
 }) => {
   const options = { protect: true, provider, retainOnDelete: true }
-  const team = new github.Team(
-    `maintainers-${owner}`,
-    {
-      description: 'Explicit write access to repositories managed by this stack. No organization administration.',
-      name: 'maintainers',
-      privacy: 'secret',
-    },
-    options,
-  )
-  const teamMembers = new github.TeamMembers(`maintainers-members-${owner}`, { members, teamSlug: team.slug }, options)
-  const teamRepositories = Object.entries(repositories).map(
-    ([name, repository]) =>
-      new github.TeamRepository(
-        `maintainers-${owner}-${name}`,
-        { permission: 'push', repository: repository.name, teamId: team.id },
-        { ...options, dependsOn: [teamMembers] },
-      ),
-  )
   const settings = new github.OrganizationSettings(
     `organization-${owner}`,
     { ...organizationSettings, billingEmail },
     {
       ...options,
-      dependsOn: [teamMembers, ...teamRepositories],
       ignoreChanges: [
         'name',
         'description',
@@ -80,5 +57,5 @@ export const createOrganization = ({
     },
     options,
   )
-  return { settings, team, teamMembers, teamRepositories, workflowPermissions }
+  return { settings, workflowPermissions }
 }
