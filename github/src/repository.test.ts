@@ -1,3 +1,4 @@
+import * as github from '@pulumi/github'
 import * as pulumi from '@pulumi/pulumi'
 import { expect, test } from 'vite-plus/test'
 
@@ -20,8 +21,20 @@ test('isolates providers, credentials, and same-named repositories across owners
     'production',
   )
 
-  const dotfiles = createRepositoryFactory('totto2727-dotfiles', pulumi.secret('test-dotfiles-token'))
-  const archives = createRepositoryFactory('totto2727-archives', pulumi.secret('test-archives-token'))
+  const dotfiles = createRepositoryFactory(
+    'totto2727-dotfiles',
+    new github.Provider('totto2727-dotfiles', {
+      owner: 'totto2727-dotfiles',
+      token: pulumi.secret('test-dotfiles-token'),
+    }),
+  )
+  const archives = createRepositoryFactory(
+    'totto2727-archives',
+    new github.Provider('totto2727-archives', {
+      owner: 'totto2727-archives',
+      token: pulumi.secret('test-archives-token'),
+    }),
+  )
   const first = dotfiles('shared-name', {}, [])
   const second = archives('shared-name', {}, ['check'])
   const { promise, resolve } = Promise.withResolvers<boolean>()

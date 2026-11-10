@@ -1,6 +1,9 @@
 # GitHub Infrastructure
 
-This guide is for maintainers who configure GitHub App authentication and deploy repository settings with Pulumi.
+This guide is for maintainers who configure GitHub App authentication and deploy organization and repository settings with Pulumi.
+The managed organizations are `totto2727-org` and `totto2727-dotfiles`.
+`totto2727-archive` and its repositories are not managed by this stack.
+See [organization policy and limitations](./managed-settings.md) and [adopt organization settings](./organization-adoption.md) before the first deployment.
 
 ## Prerequisites
 
@@ -36,7 +39,9 @@ Set these **Repository permissions**:
 | Contents       | Read and write |
 | Metadata       | Read-only      |
 
-Do not add organization or account permissions.
+The organization resources also need organization-level permissions.
+Follow the permission table in [adopt organization settings](./organization-adoption.md) and approve the updated installation in both organizations.
+Do not add unrelated account permissions.
 This configuration uses installation tokens, not user OAuth authorization.
 
 After you create the App:
@@ -102,7 +107,9 @@ ESC uses `gh-login` to issue an installation token with a one-hour lifetime.
 The App ID and private key are shared, but ESC issues a separate installation token for each owner.
 Pulumi reads each token through its `githubOwners` secret configuration key and passes it to that owner's Provider.
 Both keys are required because the program loads both owner modules.
-No token for `totto2727-archives` is needed until a module manages repositories for that owner.
+Organization resources also require each owner's existing billing email through `githubOwners:totto2727OrgBillingEmail` and `githubOwners:totto2727DotfilesBillingEmail`.
+Store these values as secrets in ESC as described in [adopt organization settings](./organization-adoption.md).
+Do not configure a token for `totto2727-archive`.
 A PAT and a shared `GITHUB_TOKEN` environment variable are not required.
 The App private key remains a long-lived credential. Revoke and replace it when needed.
 
@@ -181,7 +188,8 @@ Check the preview for unexpected creation, replacement, deletion, or renaming be
 ## Add another owner
 
 Keep all owner definitions in `github/`.
-For example, you can add `totto2727-dotfiles` or `totto2727-archives` without a separate infrastructure directory.
+Add approved owners without a separate infrastructure directory.
+The archive organization is explicitly outside this stack and must not be added through this procedure.
 Do not add token definitions for an owner until the App is installed there.
 
 1. Install the App in the additional organization and grant access to its managed repositories.
@@ -208,14 +216,16 @@ Do not add token definitions for an owner until the App is installed there.
 4. Create an owner-specific module with a factory and individual repository definitions:
 
    ```ts
+   import * as github from '@pulumi/github'
    import * as pulumi from '@pulumi/pulumi'
 
    import { createRepositoryFactory } from './repository.ts'
 
-   const createRepository = createRepositoryFactory(
-     'totto2727-dotfiles',
-     new pulumi.Config('githubOwners').requireSecret('totto2727DotfilesToken'),
-   )
+   const provider = new github.Provider('totto2727-dotfiles', {
+     owner: 'totto2727-dotfiles',
+     token: new pulumi.Config('githubOwners').requireSecret('totto2727DotfilesToken'),
+   })
+   const createRepository = createRepositoryFactory('totto2727-dotfiles', provider)
 
    export const example = createRepository('example')
    ```
@@ -223,7 +233,7 @@ Do not add token definitions for an owner until the App is installed there.
    Define the repositories and their required settings.
    Import existing repositories before deployment, or let Pulumi create new ones.
    Import the module in `index.ts` and include its resources in the stack outputs.
-   For `totto2727-archives`, use owner `totto2727-archives`, token entry `totto2727Archives`, and config key `githubOwners:totto2727ArchivesToken`.
+   Keep repository and organization resources on the same owner-specific Provider.
 
 Each factory binds its resources to an owner-specific Provider and includes the owner in Pulumi resource names.
 Tokens are separate for each installation.
@@ -235,7 +245,7 @@ The Provider structure does not need to change.
 
 ```bash
 vp check github
-vp test run --dir github
+vp test run github/
 ```
 
 ## References

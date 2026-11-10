@@ -1,0 +1,32 @@
+{
+  "nameTable": {
+    "orgProvider": "urn:pulumi:production::github::pulumi:providers:github::totto2727-org",
+    "dotfilesProvider": "urn:pulumi:production::github::pulumi:providers:github::totto2727-dotfiles"
+  },
+  "resources": [
+    {
+      "type": "github:index/organizationSettings:OrganizationSettings",
+      "name": "organization-totto2727-org",
+      "id": "120071595",
+      "provider": "orgProvider"
+    },
+    {
+      "type": "github:index/organizationSettings:OrganizationSettings",
+      "name": "organization-totto2727-dotfiles",
+      "id": "185221546",
+      "provider": "dotfilesProvider"
+    },
+    {
+      "type": "github:index/actionsOrganizationWorkflowPermissions:ActionsOrganizationWorkflowPermissions",
+      "name": "workflow-permissions-totto2727-org",
+      "id": "totto2727-org",
+      "provider": "orgProvider"
+    },
+    {
+      "type": "github:index/actionsOrganizationWorkflowPermissions:ActionsOrganizationWorkflowPermissions",
+      "name": "workflow-permissions-totto2727-dotfiles",
+      "id": "totto2727-dotfiles",
+      "provider": "dotfilesProvider"
+    }
+  ]
+}

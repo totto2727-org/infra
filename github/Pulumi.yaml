@@ -1,5 +1,5 @@
 name: github
-description: Repository settings and default-branch policies for workspace repositories
+description: Organization security settings, teams, and repository policies for workspace owners
 runtime:
   name: nodejs
   options:

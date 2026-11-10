@@ -1,11 +1,8 @@
 import * as github from '@pulumi/github'
-import type * as pulumi from '@pulumi/pulumi'
 
 import { defaultBranchRules, repositorySettings } from './policy.ts'
 
-export const createRepositoryFactory = (owner: string, token: pulumi.Input<string>) => {
-  const provider = new github.Provider(owner, { owner, token })
-
+export const createRepositoryFactory = (owner: string, provider: github.Provider) => {
   return (name: string, settings: github.RepositoryArgs = {}, requiredChecks: readonly string[] = ['check']) => {
     const repository = new github.Repository(
       `repository-${owner}-${name}`,
