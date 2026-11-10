@@ -3,7 +3,6 @@
 This guide is for maintainers who configure GitHub App authentication and deploy organization and repository settings with Pulumi.
 The managed organizations are `totto2727-org` and `totto2727-dotfiles`.
 `totto2727-archive` and its repositories are not managed by this stack.
-See [organization policy and limitations](./managed-settings.md) and [adopt organization settings](./organization-adoption.md) before the first deployment.
 
 ## Prerequisites
 
@@ -39,8 +38,9 @@ Set these **Repository permissions**:
 | Contents       | Read and write |
 | Metadata       | Read-only      |
 
-The organization resources also need organization-level permissions.
-Follow the permission table in [adopt organization settings](./organization-adoption.md) and approve the updated installation in both organizations.
+Organization settings need organization Administration access, teams need Members access, and Actions defaults need organization Actions policy access.
+Grant read and write access for these capabilities, approve the updated installation in both organizations, and include the permissions in both ESC token requests.
+Verify each permission identifier against the current GitHub App and ESC token issuer before configuring it.
 Do not add unrelated account permissions.
 This configuration uses installation tokens, not user OAuth authorization.
 
@@ -108,7 +108,7 @@ The App ID and private key are shared, but ESC issues a separate installation to
 Pulumi reads each token through its `githubOwners` secret configuration key and passes it to that owner's Provider.
 Both keys are required because the program loads both owner modules.
 Organization resources also require each owner's existing billing email through `githubOwners:totto2727OrgBillingEmail` and `githubOwners:totto2727DotfilesBillingEmail`.
-Store these values as secrets in ESC as described in [adopt organization settings](./organization-adoption.md).
+Store the existing addresses as secrets in ESC without changing billing details.
 Do not configure a token for `totto2727-archive`.
 A PAT and a shared `GITHUB_TOKEN` environment variable are not required.
 The App private key remains a long-lived credential. Revoke and replace it when needed.
@@ -132,6 +132,23 @@ After approval, apply the reviewed changes:
 ```bash
 just github-up
 ```
+
+## Organization prerequisites and limits
+
+Use the TypeScript declarations in `src/organizations.ts` and `src/organization.ts` as the source of truth.
+Before the first deployment, import existing settings with `pulumi import`, using the corresponding owner-specific Provider and resource name.
+The [OrganizationSettings import ID](https://www.pulumi.com/registry/packages/github/api-docs/organizationsettings/#import) is the current numeric organization ID.
+The [Actions workflow permissions import ID](https://www.pulumi.com/registry/packages/github/api-docs/actionsorganizationworkflowpermissions/#import) is the organization slug.
+No separate manifest or permanent import task is needed.
+
+- Review inherited access before changing the base repository permission. Grants for declared repositories do not preserve access to undeclared private repositories.
+- Review team roster changes. `TeamMembers` removes unlisted users from the managed team, not from the organization.
+- The installed provider's organization-settings resource does not expose 2FA requirements, PAT policies, OAuth App restrictions, or all member-privilege controls. Review these in GitHub settings. Check affected accounts before enforcing 2FA because noncompliant accounts can lose access.
+- SAML, SCIM, team synchronization, and IP allow lists have plan or identity-provider prerequisites. No paid services are enrolled by this stack.
+- Actions allowlists and mandatory SHA pinning are not enforced here. Migrate mutable action references and verify workflow compatibility before enabling them.
+- New-repository security defaults do not retrofit all existing repositories. Private-repository security features can require paid products.
+
+Do not apply until authentication succeeds, existing settings are imported, and a refreshed preview has been reviewed.
 
 ## Add a repository
 

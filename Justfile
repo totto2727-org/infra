@@ -24,7 +24,3 @@ cloudflare-preview:
 [working-directory: 'github']
 github-preview:
   pulumi preview
-
-[working-directory: 'github']
-github-import-organizations:
-  pulumi import --stack production --file organization-imports.json --generate-code=false

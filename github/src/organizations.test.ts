@@ -1,8 +1,6 @@
 import * as pulumi from '@pulumi/pulumi'
 import { expect, test } from 'vite-plus/test'
 
-import adoption from '../organization-imports.json' with { type: 'json' }
-
 test('loads the complete stack with only the two managed organizations and preserves repository resource identities', async () => {
   const resources: pulumi.runtime.MockResourceArgs[] = []
   await pulumi.runtime.setMocks(
@@ -71,22 +69,4 @@ test('loads the complete stack with only the two managed organizations and prese
   expect(
     resources.filter(({ type }) => type === 'github:index/organizationSettings:OrganizationSettings'),
   ).toHaveLength(2)
-  expect(adoption.nameTable).toEqual({
-    orgProvider: 'urn:pulumi:production::github::pulumi:providers:github::totto2727-org',
-    dotfilesProvider: 'urn:pulumi:production::github::pulumi:providers:github::totto2727-dotfiles',
-  })
-  expect(adoption.resources).toHaveLength(4)
-  for (const imported of adoption.resources) {
-    const resource = resources.find(({ name, type }) => name === imported.name && type === imported.type)
-    expect(resource).toBeDefined()
-    const owner = imported.provider === 'orgProvider' ? 'totto2727-org' : 'totto2727-dotfiles'
-    expect(resource?.provider).toContain(`pulumi:providers:github::${owner}::id-${owner}`)
-    expect(imported.id).toBe(
-      imported.type === 'github:index/organizationSettings:OrganizationSettings'
-        ? owner === 'totto2727-org'
-          ? '120071595'
-          : '185221546'
-        : owner,
-    )
-  }
 })
