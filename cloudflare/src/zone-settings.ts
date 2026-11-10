@@ -2,7 +2,7 @@ import * as cloudflare from '@pulumi/cloudflare'
 
 import { resourceName, zoneID as zoneId } from './config.ts'
 
-// Current values from the 2026-11-08/09 audit of totto2727.dev, not a hardening policy.
+// Values from the 2026-11-08/09 audit of totto2727.dev, except the approved DNSSEC enablement.
 // Keep SSL's observed flexible mode under Cloudflare automatic SSL management (auto).
 // Declaring ssl here would compete with that controller. Its automatic-mode API has no dedicated resource.
 // Read-only settings, unconfirmed values and settings absent from the provider's documented IDs stay unmanaged.
@@ -175,7 +175,7 @@ export const zoneWebsockets = new cloudflare.ZoneSetting(
 )
 export const zoneDnssec = new cloudflare.ZoneDnssec(
   resourceName('zone-dnssec'),
-  { zoneId, status: 'disabled' },
+  { zoneId, status: 'active' },
   { import: zoneId, protect: true },
 )
 // Own normalization only through this API, not the backing sanitize entrypoint ruleset.
