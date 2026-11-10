@@ -39,7 +39,6 @@ export const createOrganization = ({
     {
       description: 'Explicit write access to repositories managed by this stack. No organization administration.',
       name: 'maintainers',
-      notificationSetting: 'notificationsEnabled',
       privacy: 'secret',
     },
     options,
