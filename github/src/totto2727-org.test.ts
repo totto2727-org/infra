@@ -1,8 +1,9 @@
 import * as pulumi from '@pulumi/pulumi'
-import { expect, test } from 'vite-plus/test'
+import { beforeAll, expect, test } from 'vite-plus/test'
 
-test('requires the current Projektor CI check without weakening branch protection', async () => {
-  const resources: pulumi.runtime.MockResourceArgs[] = []
+const resources: pulumi.runtime.MockResourceArgs[] = []
+
+beforeAll(async () => {
   await pulumi.runtime.setMocks(
     {
       call: (args) => {
@@ -20,17 +21,31 @@ test('requires the current Projektor CI check without weakening branch protectio
   pulumi.runtime.setAllConfig({ 'githubOwners:totto2727OrgToken': 'test-org-token' }, [
     'githubOwners:totto2727OrgToken',
   ])
-  const { projektor } = await import('./totto2727-org.ts')
+  const repositories = await import('./totto2727-org.ts')
   const { promise, resolve } = Promise.withResolvers<boolean>()
-  pulumi.all([projektor.repository.id, projektor.ruleset.id, projektor.vulnerabilityAlerts.id]).apply(() => {
-    resolve(true)
-  })
+  pulumi
+    .all(
+      Object.values(repositories).flatMap(({ repository, ruleset, vulnerabilityAlerts }) => [
+        repository.id,
+        ruleset.id,
+        vulnerabilityAlerts.id,
+      ]),
+    )
+    .apply(() => {
+      resolve(true)
+    })
   await promise
+})
 
-  expect(resources.find(({ name }) => name === 'default-branch-totto2727-org-projektor')?.inputs).toMatchObject({
+test.each([
+  { repository: 'projektor', contexts: ['check'] },
+  { repository: 'mdts', contexts: ['check'] },
+  { repository: 'nix-cache', contexts: ['check'] },
+])('requires the current $repository CI checks without weakening branch protection', ({ repository, contexts }) => {
+  expect(resources.find(({ name }) => name === `default-branch-totto2727-org-${repository}`)?.inputs).toMatchObject({
     conditions: { refName: { excludes: [], includes: ['~DEFAULT_BRANCH'] } },
     enforcement: 'active',
-    repository: 'projektor',
+    repository,
     rules: {
       deletion: true,
       nonFastForward: true,
@@ -40,7 +55,7 @@ test('requires the current Projektor CI check without weakening branch protectio
       },
       requiredStatusChecks: {
         doNotEnforceOnCreate: false,
-        requiredChecks: [{ context: 'check', integrationId: 15_368 }],
+        requiredChecks: contexts.map((context) => ({ context, integrationId: 15_368 })),
         strictRequiredStatusChecksPolicy: false,
       },
     },
