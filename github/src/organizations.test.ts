@@ -25,25 +25,38 @@ test('loads the complete stack with only the two managed organizations and prese
   }
   pulumi.runtime.setAllConfig(config, Object.keys(config))
   const stack = await import('../index.ts')
-  const { organizations } = await import('./organizations.ts')
-  const { promise, resolve } = Promise.withResolvers<boolean>()
+  const organizations = await import('./organizations.ts')
+  const { promise, resolve } = Promise.withResolvers<string[]>()
   pulumi
     .all([
       ...stack.organizationIds,
       ...stack.maintainerTeamIds,
       ...stack.rulesetIds,
       ...stack.vulnerabilityAlertIds,
-      ...organizations.flatMap(({ teamMembers, teamRepositories, workflowPermissions }) => [
+      ...Object.values(organizations).flatMap(({ teamMembers, teamRepositories, workflowPermissions }) => [
         teamMembers.id,
         workflowPermissions.id,
         ...teamRepositories.map(({ id }) => id),
       ]),
     ])
-    .apply(() => resolve(true))
-  await promise
+    .apply((ids) => resolve(ids))
+  const ids = await promise
+  expect(ids.slice(0, 4)).toEqual([
+    'id-organization-totto2727-org',
+    'id-organization-totto2727-dotfiles',
+    'id-maintainers-totto2727-org',
+    'id-maintainers-totto2727-dotfiles',
+  ])
 
   const providers = resources.filter(({ type }) => type === 'pulumi:providers:github')
   expect(providers.map(({ name }) => name).toSorted()).toEqual(['totto2727-dotfiles', 'totto2727-org'])
+  for (const owner of ['totto2727-org', 'totto2727-dotfiles']) {
+    for (const resource of resources.filter(
+      ({ name, type }) => name.includes(owner) && type !== 'pulumi:providers:github',
+    )) {
+      expect(resource.provider).toContain(`pulumi:providers:github::${owner}::id-${owner}`)
+    }
+  }
   const repositories = resources.filter(({ type }) => type === 'github:index/repository:Repository')
   expect(repositories).toHaveLength(38)
   const grants = resources.filter(({ type }) => type === 'github:index/teamRepository:TeamRepository')

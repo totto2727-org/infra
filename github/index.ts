@@ -1,4 +1,4 @@
-import { organizations } from './src/organizations.ts'
+import { totto2727Dotfiles, totto2727Org } from './src/organizations.ts'
 import * as dotfiles from './src/totto2727-dotfiles.ts'
 import * as org from './src/totto2727-org.ts'
 
@@ -9,5 +9,5 @@ export const rulesetIds = Object.values(repositories).map(({ ruleset }) => rules
 export const vulnerabilityAlertIds = Object.values(repositories).map(
   ({ vulnerabilityAlerts }) => vulnerabilityAlerts.id,
 )
-export const organizationIds = organizations.map(({ settings }) => settings.id)
-export const maintainerTeamIds = organizations.map(({ team }) => team.id)
+export const organizationIds = [totto2727Org.settings.id, totto2727Dotfiles.settings.id]
+export const maintainerTeamIds = [totto2727Org.team.id, totto2727Dotfiles.team.id]

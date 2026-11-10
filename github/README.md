@@ -38,9 +38,16 @@ Set these **Repository permissions**:
 | Contents       | Read and write |
 | Metadata       | Read-only      |
 
-Organization settings need organization Administration access, teams need Members access, and Actions defaults need organization Actions policy access.
-Grant read and write access for these capabilities, approve the updated installation in both organizations, and include the permissions in both ESC token requests.
-Verify each permission identifier against the current GitHub App and ESC token issuer before configuring it.
+Add these **Organization permissions**:
+
+| Permission     | Level          |
+| -------------- | -------------- |
+| Administration | Read and write |
+| Members        | Read and write |
+
+Organization Administration covers organization settings and the Actions workflow defaults.
+Members covers teams, team membership, and team repository grants together with the existing Repository Administration permission.
+Approve the updated installation in both organizations, and request `organization_administration: write` and `members: write` in both ESC token entries.
 Do not add unrelated account permissions.
 This configuration uses installation tokens, not user OAuth authorization.
 
@@ -84,6 +91,8 @@ values:
           administration: write
           contents: write
           metadata: read
+          members: write
+          organization_administration: write
     totto2727Dotfiles:
       fn::open::gh-login:
         appId: ${githubApp.appId}
@@ -93,6 +102,8 @@ values:
           administration: write
           contents: write
           metadata: read
+          members: write
+          organization_administration: write
   pulumiConfig:
     githubOwners:totto2727OrgToken: ${tokens.totto2727Org.accessToken}
     githubOwners:totto2727DotfilesToken: ${tokens.totto2727Dotfiles.accessToken}
@@ -222,6 +233,8 @@ Do not add token definitions for an owner until the App is installed there.
          administration: write
          contents: write
          metadata: read
+         members: write
+         organization_administration: write
    ```
 
 3. Add the corresponding entry under `values.pulumiConfig`:
