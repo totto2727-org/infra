@@ -154,8 +154,8 @@ export const dlpSettings = new cloudflare.ZeroTrustDlpSettings(
 )
 
 // The installed plugin tags redirect_url as computed, despite the SDK exposing it.
-// OTP has no observed writable config fields: {} omits only the generated callback,
-// not an actual input. group_member_deprovision is absent from native SCIM inputs.
+// The provider rejects SCIM configuration for onetimepin identity providers.
+// config omits only the generated callback, not an actual writable input.
 export const oneTimePinIdentityProvider = new cloudflare.ZeroTrustAccessIdentityProvider(
   config.resourceName('one-time-pin-identity-provider'),
   {
@@ -163,11 +163,6 @@ export const oneTimePinIdentityProvider = new cloudflare.ZeroTrustAccessIdentity
     name: '',
     type: 'onetimepin',
     config: {},
-    scimConfig: {
-      enabled: false,
-      userDeprovision: false,
-      seatDeprovision: false,
-    },
   },
   { import: `accounts/${config.accountID}/5b7f588f-66e8-434e-bb36-a69a837a61ed`, protect: true },
 )
