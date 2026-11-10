@@ -76,6 +76,7 @@ test('loads the complete stack with only the two managed organizations and prese
   ])
   expect(resources.find(({ name }) => name === 'maintainers-members-totto2727-dotfiles')?.inputs['members']).toEqual([
     { role: 'maintainer', username: 'totto2727' },
+    { role: 'member', username: 'totto2727-ai' },
   ])
   expect(new Set(resources.map(({ name }) => name)).size).toBe(resources.length)
   expect(resources.some(({ name }) => name.includes('archive'))).toBe(false)

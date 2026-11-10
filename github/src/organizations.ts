@@ -21,7 +21,10 @@ export const totto2727Org = createOrganization({
 
 export const totto2727Dotfiles = createOrganization({
   billingEmail: config.requireSecret('totto2727DotfilesBillingEmail'),
-  members: [{ username: 'totto2727', role: 'maintainer' }],
+  members: [
+    { username: 'totto2727', role: 'maintainer' },
+    { username: 'totto2727-ai', role: 'member' },
+  ],
   owner: 'totto2727-dotfiles',
   provider: dotfilesProvider,
   repositories: Object.fromEntries(Object.entries(dotfiles).map(([name, { repository }]) => [name, repository])),
