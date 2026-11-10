@@ -170,11 +170,6 @@ const expectedResources = [
       name: '',
       type: 'onetimepin',
       config: {},
-      scimConfig: {
-        enabled: false,
-        userDeprovision: false,
-        seatDeprovision: false,
-      },
     },
   },
 ]
@@ -230,9 +225,9 @@ test('does not fabricate disabled organization inactivity values or redacted aut
   )
 })
 
-test('OTP omission removes only computed callback and unsupported SCIM fields, not writable configuration', () => {
+test('OTP omits computed callbacks and SCIM configuration unsupported by onetimepin', () => {
   const identityProvider = resources.find((resource) => resource.name === 'iac-prod-one-time-pin-identity-provider')
   expect(identityProvider?.inputs).toHaveProperty('config', {})
   expect(identityProvider?.inputs).not.toHaveProperty('config.redirectUrl')
-  expect(identityProvider?.inputs).not.toHaveProperty('scimConfig.groupMemberDeprovision')
+  expect(identityProvider?.inputs).not.toHaveProperty('scimConfig')
 })
