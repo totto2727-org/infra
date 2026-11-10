@@ -1,11 +1,7 @@
-import * as pulumi from '@pulumi/pulumi'
-
 import { createRepositoryFactory } from './repository.ts'
+import { orgProvider } from './totto2727-org-provider.ts'
 
-const createRepository = createRepositoryFactory(
-  'totto2727-org',
-  new pulumi.Config('githubOwners').requireSecret('totto2727OrgToken'),
-)
+const createRepository = createRepositoryFactory('totto2727-org', orgProvider)
 
 const template = (repository: string) => ({ includeAllBranches: false, owner: 'totto2727-org', repository })
 

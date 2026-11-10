@@ -1,11 +1,7 @@
-import * as pulumi from '@pulumi/pulumi'
-
 import { createRepositoryFactory } from './repository.ts'
+import { dotfilesProvider } from './totto2727-dotfiles-provider.ts'
 
-const createRepository = createRepositoryFactory(
-  'totto2727-dotfiles',
-  new pulumi.Config('githubOwners').requireSecret('totto2727DotfilesToken'),
-)
+const createRepository = createRepositoryFactory('totto2727-dotfiles', dotfilesProvider)
 
 export const nix = createRepository('nix', {
   description: 'Shared Nix development environments and GitHub Actions',
