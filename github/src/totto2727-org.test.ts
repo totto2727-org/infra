@@ -39,7 +39,7 @@ beforeAll(async () => {
 
 test.each([
   { repository: 'projektor', contexts: ['check'] },
-  { repository: 'mdts', contexts: ['ci'] },
+  { repository: 'mdts', contexts: ['check'] },
   { repository: 'nix-cache', contexts: ['check'] },
 ])('requires the current $repository CI checks without weakening branch protection', ({ repository, contexts }) => {
   expect(resources.find(({ name }) => name === `default-branch-totto2727-org-${repository}`)?.inputs).toMatchObject({
