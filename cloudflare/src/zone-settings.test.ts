@@ -53,7 +53,6 @@ const observedSettings = [
 ] as const
 
 const observedSingletons = [
-  ['zoneDnssec:ZoneDnssec', { status: 'disabled' }],
   ['urlNormalizationSettings:UrlNormalizationSettings', { type: 'cloudflare', scope: 'both' }],
   ['tieredCache:TieredCache', { value: 'on' }],
   [
@@ -177,7 +176,7 @@ afterAll(() => {
   vi.unstubAllEnvs()
 })
 
-describe('Current-value zone settings adoption', () => {
+describe('Zone settings', () => {
   test.each(observedSettings)('adopts observed %s without changing its value', (settingId, value) => {
     const matching = resources.filter((resource) => resource.id === `${zoneId}/${settingId}`)
     expect(matching).toHaveLength(1)
@@ -190,6 +189,15 @@ describe('Current-value zone settings adoption', () => {
     expect(matching).toHaveLength(1)
     expect(matching[0]).toMatchObject({ id: zoneId, inputs: { zoneId, ...inputs } })
     expect(matching[0]?.inputs).toEqual({ zoneId, ...inputs })
+  })
+
+  test('enables DNSSEC on the existing protected zone without changing its identity', () => {
+    const matching = resources.filter((resource) => resource.type === 'cloudflare:index/zoneDnssec:ZoneDnssec')
+    expect(matching).toHaveLength(1)
+    expect(matching[0]).toMatchObject({ id: zoneId, name: 'iac-prod-zone-dnssec' })
+    expect(matching[0]?.inputs).toEqual({ zoneId, status: 'active' })
+    expect(options.get('iac-prod-zone-dnssec')).toMatchObject({ import: zoneId, protect: true })
+    expect(options.get('iac-prod-zone-dnssec')?.ignoreChanges).toBeUndefined()
   })
 
   test('requires an existing import and deletion protection for every native resource', () => {

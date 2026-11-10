@@ -1,7 +1,6 @@
 # Shared Cloudflare settings
 
 This project owns shared settings for the account and `totto2727.dev`.
-The first pull request adopts observed settings, and the second changes Gateway log redaction.
 Resources have individual declarations, and account and Zone identifiers come from `src/config.ts`.
 
 ## Managed settings
@@ -65,7 +64,7 @@ Deletion candidates are excluded from adoption, not deleted by this program.
 
 | Resource lifecycle                                                      | Expected first preview                                                                  |
 | ----------------------------------------------------------------------- | --------------------------------------------------------------------------------------- |
-| Resources with native import support                                    | Import existing identity, without configuration changes                                 |
+| Resources with native import support                                    | Import existing identity; review any settings updates                                   |
 | DNS, schema and device singleton settings without native import support | Create Pulumi state through the native provider's update endpoint using observed values |
 | Apex/subdomain Email Routing DNS controllers                            | Configure generated mail DNS through native Create; no zone-only import for subdomains  |
 | Existing Access and AI Gateway resources                                | Unchanged identities and outputs                                                        |
@@ -80,7 +79,7 @@ Email Routing DNS Create can rewrite generated mail DNS.
 3. Check every import ID and singleton create against the table above.
 4. Investigate other creates, updates, deletions, replacements and input mismatches.
 5. After approval, use the existing Cloudflare deployment recipe.
-6. Require a clean preview before applying the separate Gateway log-redaction change.
+6. Require a clean post-deployment preview for the resources changed by the approved update.
 
 No deployment or state import has been executed.
 Direct API scripts and custom REST providers are not used.
