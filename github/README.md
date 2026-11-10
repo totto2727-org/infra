@@ -11,10 +11,9 @@ The managed organizations are `totto2727-org` and `totto2727-dotfiles`.
 - Have permission to register and install a GitHub App in each managed GitHub organization.
 - Run commands from the repository root.
 
-## 1. Create a GitHub App
+## GitHub App configuration
 
-Open [Register new GitHub App](https://github.com/organizations/totto2727-org/settings/apps/new) in `totto2727-org`.
-Use these settings:
+The GitHub App is registered in [`totto2727-org`](https://github.com/organizations/totto2727-org/settings/apps/new) with these settings:
 
 | Setting                                        | Value                                    |
 | ---------------------------------------------- | ---------------------------------------- |
@@ -26,51 +25,37 @@ Use these settings:
 | Webhook: Active                                | Disabled                                 |
 | Where can this GitHub App be installed?        | **Any account**                          |
 
-Select **Any account** so that you can install the same App in other organizations later.
-This setting does not grant access to those organizations.
-An administrator must install the App in each organization.
+The App requires these permissions in both installations:
 
-Set these **Repository permissions**:
-
-| Permission     | Level          |
-| -------------- | -------------- |
-| Administration | Read and write |
-| Contents       | Read and write |
-| Metadata       | Read-only      |
-
-Add these **Organization permissions**:
-
-| Permission     | Level          |
-| -------------- | -------------- |
-| Administration | Read and write |
-| Members        | Read and write |
+| Scope        | Permission     | Level          |
+| ------------ | -------------- | -------------- |
+| Repository   | Administration | Read and write |
+| Repository   | Contents       | Read and write |
+| Repository   | Metadata       | Read-only      |
+| Organization | Administration | Read and write |
+| Organization | Members        | Read and write |
+| Account      | All            | No access      |
 
 Organization Administration covers organization settings and the Actions workflow defaults.
-Members covers teams, team membership, and team repository grants together with the existing Repository Administration permission.
-Approve the updated installation in both organizations, and request `organization_administration: write` and `members: write` in both ESC token entries.
-Do not add unrelated account permissions.
+Members covers teams and team membership. Team repository grants also require Repository Administration.
 This configuration uses installation tokens, not user OAuth authorization.
 
-After you create the App:
+| Installation         | Repository access                                                    |
+| -------------------- | -------------------------------------------------------------------- |
+| `totto2727-org`      | Every repository in [`src/totto2727-org.ts`](./src/totto2727-org.ts) |
+| `totto2727-dotfiles` | `nix`                                                                |
 
-1. Record its **App ID** from the App settings page. Do not use the Client ID.
-2. Select **Generate a private key** and download the PEM file.
-3. Open **Install App** and select `totto2727-org`.
-4. Select **Only select repositories** and grant access to every repository in [`src/totto2727-org.ts`](./src/totto2727-org.ts).
-5. Complete the installation. App registration alone does not install the App.
-6. Install the same App in `totto2727-dotfiles` and grant access to `nix`.
+Both installations require organization administrator approval for the permissions above.
+Repository selection is **Only select repositories**, or **All repositories** when access to current and future repositories is intended.
+App registration alone does not grant access to either organization.
 
-You can select **All repositories** instead if the App must access current and future repositories in that organization.
-With **Only select repositories**, update the installation access before you add another repository to Pulumi.
+## Pulumi ESC configuration
 
-## 2. Configure Pulumi ESC
+The ESC environment is `totto2727/github/production`, referenced as `github/production` in `Pulumi.production.yaml`.
+It contains the numeric App ID, a PEM private key, and the existing billing email for each organization.
+The App ID is distinct from the Client ID.
 
-In Pulumi Console, select organization `totto2727`.
-Create ESC project `github` and environment `production`.
-The full environment name is `totto2727/github/production`.
-The stack configuration in `Pulumi.production.yaml` already references `github/production`.
-
-Paste this complete definition for both managed owners into the ESC environment:
+The environment definition is:
 
 ```yaml
 values:
@@ -81,6 +66,11 @@ values:
         -----BEGIN RSA PRIVATE KEY-----
         REPLACE_WITH_PRIVATE_KEY
         -----END RSA PRIVATE KEY-----
+  billingEmails:
+    totto2727Org:
+      fn::secret: REPLACE_WITH_EXISTING_ORG_BILLING_EMAIL
+    totto2727Dotfiles:
+      fn::secret: REPLACE_WITH_EXISTING_DOTFILES_BILLING_EMAIL
   tokens:
     totto2727Org:
       fn::open::gh-login:
@@ -107,24 +97,24 @@ values:
   pulumiConfig:
     githubOwners:totto2727OrgToken: ${tokens.totto2727Org.accessToken}
     githubOwners:totto2727DotfilesToken: ${tokens.totto2727Dotfiles.accessToken}
+    githubOwners:totto2727OrgBillingEmail: ${billingEmails.totto2727Org}
+    githubOwners:totto2727DotfilesBillingEmail: ${billingEmails.totto2727Dotfiles}
 ```
 
-Replace `123456` with the numeric App ID.
-Replace the private key block with the complete PEM file, including its BEGIN and END lines.
-Keep the `fn::secret` wrapper and YAML indentation.
-Save the environment without copying the private key into source control or chat.
+`123456` and the `REPLACE_WITH_...` values are placeholders for the existing credentials and billing addresses.
+The private key includes its BEGIN and END lines and remains encrypted with `fn::secret`.
+Private keys and billing addresses stay in ESC, not in source control or chat.
 
 ESC uses `gh-login` to issue an installation token with a one-hour lifetime.
 The App ID and private key are shared, but ESC issues a separate installation token for each owner.
 Pulumi reads each token through its `githubOwners` secret configuration key and passes it to that owner's Provider.
 Both keys are required because the program loads both owner modules.
-Organization resources also require each owner's existing billing email through `githubOwners:totto2727OrgBillingEmail` and `githubOwners:totto2727DotfilesBillingEmail`.
-Store the existing addresses as secrets in ESC without changing billing details.
-Do not configure a token for `totto2727-archive`.
+The billing email inputs preserve the existing billing details.
+No token is configured for `totto2727-archive`.
 A PAT and a shared `GITHUB_TOKEN` environment variable are not required.
 The App private key remains a long-lived credential. Revoke and replace it when needed.
 
-## 3. Verify and deploy
+## Verify and deploy
 
 Select the production stack with `pulumi stack select production --cwd github`.
 Run `just github-preview` to check authentication and the proposed changes.
