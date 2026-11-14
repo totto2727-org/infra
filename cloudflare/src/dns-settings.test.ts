@@ -50,19 +50,10 @@ afterAll(() => {
 
 const expectedDnsSettings = {
   flattenAllCnames: false,
-  foundationDns: false,
   multiProvider: false,
   nameservers: { type: 'cloudflare.standard' },
   nsTtl: 86400,
   secondaryOverrides: false,
-  soa: {
-    expire: 604800,
-    minTtl: 1800,
-    refresh: 10000,
-    retry: 2400,
-    rname: 'dns.cloudflare.com',
-    ttl: 3600,
-  },
   zoneMode: 'standard',
 }
 
@@ -84,14 +75,14 @@ describe('Native DNS and schema settings singletons', () => {
     )
   })
 
-  test('preserves exact observed writable account defaults without inventing enforceDnsOnly or null strings', () => {
+  test('registers supported account defaults without requesting custom SOA', () => {
     expect(resources.find(({ name }) => name === 'iac-prod-account-dns-settings')?.inputs).toEqual({
       accountId,
       zoneDefaults: expectedDnsSettings,
     })
   })
 
-  test('preserves exact observed writable zone settings without assigning a nameserver or fallback zone', () => {
+  test('registers supported zone settings without requesting custom SOA', () => {
     expect(resources.find(({ name }) => name === 'iac-prod-zone-dns-settings')?.inputs).toEqual({
       zoneId,
       ...expectedDnsSettings,
