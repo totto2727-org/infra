@@ -11,8 +11,6 @@ beforeAll(async () => {
     {
       call: (args) => {
         switch (args.token) {
-          case 'cloudflare:index/getAccountRoles:getAccountRoles':
-            return { results: [{ name: 'Super Administrator - All Privileges', id: 'program-role' }] }
           case 'cloudflare:index/getAccountPermissionGroups:getAccountPermissionGroups':
             return { results: [{ name: 'Super Administrator - All Privileges', id: 'program-permission-group' }] }
           case 'cloudflare:index/getResourceGroups:getResourceGroups':
@@ -82,8 +80,8 @@ describe('Cloudflare program ownership', () => {
 
   test('passes native lookup outputs through to the registered membership', () => {
     const member = resources.find(({ type }) => type === 'cloudflare:index/accountMember:AccountMember')
+    expect(member?.inputs).not.toHaveProperty('roles')
     expect(member?.inputs).toMatchObject({
-      roles: ['program-role'],
       policies: [
         {
           access: 'allow',

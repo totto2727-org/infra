@@ -12,13 +12,6 @@ beforeAll(async () => {
       call: (args) => {
         calls.push(args)
         switch (args.token) {
-          case 'cloudflare:index/getAccountRoles:getAccountRoles':
-            return {
-              results: [
-                { name: 'Administrator', id: 'unrelated-role' },
-                { name: 'Super Administrator - All Privileges', id: 'resolved-role' },
-              ],
-            }
           case 'cloudflare:index/getAccountPermissionGroups:getAccountPermissionGroups':
             return { results: [{ name: 'Super Administrator - All Privileges', id: 'resolved-permission-group' }] }
           case 'cloudflare:index/getResourceGroups:getResourceGroups':
@@ -56,7 +49,7 @@ afterAll(() => {
 })
 
 describe('Existing account membership', () => {
-  test('assigns provider-resolved IDs while preserving the accepted administrator', () => {
+  test('assigns only existing policies without also configuring mutually exclusive legacy roles', () => {
     expect(resources).toHaveLength(1)
     expect(resources[0]).toMatchObject({
       type: 'cloudflare:index/accountMember:AccountMember',
@@ -67,7 +60,6 @@ describe('Existing account membership', () => {
       accountId: '5643a837ef66765e7881c0831a36ebed',
       email: 'kaihatu.totto2727@gmail.com',
       status: 'accepted',
-      roles: ['resolved-role'],
       policies: [
         {
           access: 'allow',
@@ -79,13 +71,9 @@ describe('Existing account membership', () => {
   })
 
   test('looks up exact names within the configured account', () => {
-    expect(calls).toHaveLength(3)
+    expect(calls).toHaveLength(2)
     expect(calls).toEqual(
       expect.arrayContaining([
-        expect.objectContaining({
-          token: 'cloudflare:index/getAccountRoles:getAccountRoles',
-          inputs: { accountId: '5643a837ef66765e7881c0831a36ebed', maxItems: 1000 },
-        }),
         expect.objectContaining({
           token: 'cloudflare:index/getAccountPermissionGroups:getAccountPermissionGroups',
           inputs: {

@@ -18,20 +18,19 @@ Resources have individual declarations, and account and Zone identifiers come fr
 | `src/notifications.ts`                                                                                 | Web Analytics email notification                                                                 |
 | `src/zone-settings.ts`                                                                                 | Editable Zone settings, DNSSEC, URL normalization, cache, bots, managed headers and TLS settings |
 | `src/zero-trust.ts`                                                                                    | Gateway logging                                                                                  |
-| `src/zero-trust-settings.ts`                                                                           | Shared Gateway, DNS location, WARP, connectivity, DLP and identity settings                      |
+| `src/zero-trust-settings.ts`                                                                           | Organization, shared Gateway, DNS location, WARP, connectivity, DLP and identity settings        |
 | `src/web-analytics.ts`                                                                                 | Zone-wide Web Analytics site                                                                     |
 
 Native API list inputs, such as policy matchers and split-tunnel networks, remain arrays.
 Resources themselves are not created from configuration arrays or factories.
 Email Routing owns MX, DKIM and SPF records; only the independent DMARC record is declared as a `DnsRecord`.
 
-| Reference                                                    | Handling                                                                |
-| ------------------------------------------------------------ | ----------------------------------------------------------------------- |
-| IAM roles and permission/resource groups                     | Native data sources, exact names, unique match required                 |
-| Missing/ambiguous IAM names or retrieval limit reached       | Stop; no fallback ID                                                    |
-| Existing imports and centralized Zone identity               | Keep bootstrap identifiers                                              |
-| Gateway certificate, DNS allocation and DMARC report address | Keep service-issued values without a stable name                        |
-| IAM lookup acceptance                                        | Requires ESC account settings read access; production lookup unverified |
+| Reference                                                    | Handling                                                |
+| ------------------------------------------------------------ | ------------------------------------------------------- |
+| IAM permission/resource groups                               | Native data sources, exact names, unique match required |
+| Missing/ambiguous IAM names or retrieval limit reached       | Stop; no fallback ID                                    |
+| Existing imports and centralized Zone identity               | Keep bootstrap identifiers                              |
+| Gateway certificate, DNS allocation and DMARC report address | Keep service-issued values without a stable name        |
 
 ## Not managed
 
@@ -41,7 +40,6 @@ Email Routing owns MX, DKIM and SPF records; only the independent DMARC record i
 | Budget notification threshold                                                  | Pulumiで管理不可       |
 | Page Shield enablement                                                         | Pulumiで管理不可       |
 | Organization trust, posture caching and end-user app creation controls         | Pulumiで管理不可       |
-| Disabled service-token inactivity with null action/threshold                   | Pulumiで管理不可       |
 | DNS location DNS64 and anonymized logging                                      | Pulumiで管理不可       |
 | WARP advanced controls and global disconnect                                   | Pulumiで管理不可       |
 | DLP validation timeout and SCIM group-member deprovisioning                    | Pulumiで管理不可       |
@@ -86,12 +84,10 @@ Direct API scripts and custom REST providers are not used.
 
 ## Preview blockers
 
-| Blocker                                                                                   | Required action                                                                             |
-| ----------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------- |
-| Previous adoption preview returned HTTP 403 on 40 distinct read endpoints                 | Update the existing API token in Pulumi ESC `cloudflare/production`; retain existing grants |
-| Existing `repository:totto2727-org/monorepo` Access tag returned a false not-found result | Resolve the provider SDK's unescaped slash lookup; do not rename or recreate the tag        |
-| Expanded native declarations have not had a successful production preview                 | Review them after the token update; local mocks do not prove cloud acceptance               |
-| Email Routing DNS subdomain response is deprecated and unmodeled by the SDK               | Confirm native subdomain reconciliation during the first authorized production preview      |
+| Blocker                                                                                   | Required action                                                                        |
+| ----------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------- |
+| Existing `repository:totto2727-org/monorepo` Access tag returned a false not-found result | Resolve the provider SDK's unescaped slash lookup; do not rename or recreate the tag   |
+| Email Routing DNS subdomain response is deprecated and unmodeled by the SDK               | Confirm native subdomain reconciliation during the first authorized production preview |
 
 The separate `cf` OAuth grant does not expand the Pulumi ESC token.
 
