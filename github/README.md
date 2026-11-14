@@ -1,8 +1,11 @@
 # GitHub Infrastructure
 
 This guide is for maintainers who configure GitHub App authentication and deploy organization and repository settings with Pulumi.
-The managed organizations are `totto2727-org` and `totto2727-dotfiles`.
-`totto2727-archive` and its repositories are not managed by this stack.
+The managed organizations are `totto2727-org`, `totto2727-dotfiles`, and `totto2727-archive`.
+Only the first two organizations have repository resources in this stack.
+`totto2727` is an organization owner (`admin`), and `totto2727-ai` is a `member` in each organization.
+Organization members have base repository `write` access and can create public and private repositories.
+These organization-wide privileges also apply to future members.
 
 ## Prerequisites
 
@@ -25,7 +28,7 @@ The GitHub App is registered in [`totto2727-org`](https://github.com/organizatio
 | Webhook: Active                                | Disabled                                 |
 | Where can this GitHub App be installed?        | **Any account**                          |
 
-The App requires these permissions in both installations:
+The App requires these permissions in all three installations:
 
 | Scope        | Permission     | Level          |
 | ------------ | -------------- | -------------- |
@@ -37,17 +40,18 @@ The App requires these permissions in both installations:
 | Account      | All            | No access      |
 
 Organization Administration covers organization settings and the Actions workflow defaults.
-Members covers teams and team membership. Team repository grants also require Repository Administration.
+Members covers organization membership and roles.
 This configuration uses installation tokens, not user OAuth authorization.
 
 | Installation         | Repository access                                                    |
 | -------------------- | -------------------------------------------------------------------- |
 | `totto2727-org`      | Every repository in [`src/totto2727-org.ts`](./src/totto2727-org.ts) |
 | `totto2727-dotfiles` | `nix`                                                                |
+| `totto2727-archive`  | No repository resources are managed by this stack                    |
 
-Both installations require organization administrator approval for the permissions above.
+All installations require organization administrator approval for the permissions above.
 Repository selection is **Only select repositories**, or **All repositories** when access to current and future repositories is intended.
-App registration alone does not grant access to either organization.
+App registration alone does not grant access to an organization.
 
 ## Pulumi ESC configuration
 
@@ -71,6 +75,8 @@ values:
       fn::secret: REPLACE_WITH_EXISTING_ORG_BILLING_EMAIL
     totto2727Dotfiles:
       fn::secret: REPLACE_WITH_EXISTING_DOTFILES_BILLING_EMAIL
+    totto2727Archive:
+      fn::secret: REPLACE_WITH_EXISTING_ARCHIVE_BILLING_EMAIL
   tokens:
     totto2727Org:
       fn::open::gh-login:
@@ -94,11 +100,24 @@ values:
           metadata: read
           members: write
           organization_administration: write
+    totto2727Archive:
+      fn::open::gh-login:
+        appId: ${githubApp.appId}
+        privateKey: ${githubApp.privateKey}
+        owner: totto2727-archive
+        permissions:
+          administration: write
+          contents: write
+          metadata: read
+          members: write
+          organization_administration: write
   pulumiConfig:
     githubOwners:totto2727OrgToken: ${tokens.totto2727Org.accessToken}
     githubOwners:totto2727DotfilesToken: ${tokens.totto2727Dotfiles.accessToken}
+    githubOwners:totto2727ArchiveToken: ${tokens.totto2727Archive.accessToken}
     githubOwners:totto2727OrgBillingEmail: ${billingEmails.totto2727Org}
     githubOwners:totto2727DotfilesBillingEmail: ${billingEmails.totto2727Dotfiles}
+    githubOwners:totto2727ArchiveBillingEmail: ${billingEmails.totto2727Archive}
 ```
 
 `123456` and the `REPLACE_WITH_...` values are placeholders for the existing credentials and billing addresses.
@@ -108,9 +127,8 @@ Private keys and billing addresses stay in ESC, not in source control or chat.
 ESC uses `gh-login` to issue an installation token with a one-hour lifetime.
 The App ID and private key are shared, but ESC issues a separate installation token for each owner.
 Pulumi reads each token through its `githubOwners` secret configuration key and passes it to that owner's Provider.
-Both keys are required because the program loads both owner modules.
+All three owner tokens and billing emails are required because the program loads all three organizations.
 The billing email inputs preserve the existing billing details.
-No token is configured for `totto2727-archive`.
 A PAT and a shared `GITHUB_TOKEN` environment variable are not required.
 The App private key remains a long-lived credential. Revoke and replace it when needed.
 
@@ -143,7 +161,8 @@ The [Actions workflow permissions import ID](https://www.pulumi.com/registry/pac
 No separate manifest or permanent import task is needed.
 
 - Review inherited access before changing the base repository permission. Grants for declared repositories do not preserve access to undeclared private repositories.
-- Review team roster changes. `TeamMembers` removes unlisted users from the managed team, not from the organization.
+- Organization memberships and their `admin` or `member` roles are managed in `src/memberships.ts`. Teams and individual repository access grants remain outside this stack.
+- Package creation, inheritance, and per-package access controls require manual configuration because GitHub provider 6.15.1 has no corresponding resources. Repository write access and read-only workflow defaults do not guarantee a registry-write prohibition.
 - The installed provider's organization-settings resource does not expose 2FA requirements, PAT policies, OAuth App restrictions, or all member-privilege controls. Review these in GitHub settings. Check affected accounts before enforcing 2FA because noncompliant accounts can lose access.
 - SAML, SCIM, team synchronization, and IP allow lists have plan or identity-provider prerequisites. No paid services are enrolled by this stack.
 - Actions allowlists and mandatory SHA pinning are not enforced here. Migrate mutable action references and verify workflow compatibility before enabling them.
@@ -203,63 +222,13 @@ Keep existing fork and template source values in its declaration.
 Do not change creation-only source values on an existing repository: that can require replacement.
 Check the preview for unexpected creation, replacement, deletion, or renaming before every deployment.
 
-## Add another owner
+## Owner isolation
 
-Keep all owner definitions in `github/`.
-Add approved owners without a separate infrastructure directory.
-The archive organization is explicitly outside this stack and must not be added through this procedure.
-Do not add token definitions for an owner until the App is installed there.
-
-1. Install the App in the additional organization and grant access to its managed repositories.
-2. Add a separate token entry under `values.tokens`. For example:
-
-   ```yaml
-   totto2727Dotfiles:
-     fn::open::gh-login:
-       appId: ${githubApp.appId}
-       privateKey: ${githubApp.privateKey}
-       owner: totto2727-dotfiles
-       permissions:
-         administration: write
-         contents: write
-         metadata: read
-         members: write
-         organization_administration: write
-   ```
-
-3. Add the corresponding entry under `values.pulumiConfig`:
-
-   ```yaml
-   githubOwners:totto2727DotfilesToken: ${tokens.totto2727Dotfiles.accessToken}
-   ```
-
-4. Create an owner-specific module with a factory and individual repository definitions:
-
-   ```ts
-   import * as github from '@pulumi/github'
-   import * as pulumi from '@pulumi/pulumi'
-
-   import { createRepositoryFactory } from './repository.ts'
-
-   const provider = new github.Provider('totto2727-dotfiles', {
-     owner: 'totto2727-dotfiles',
-     token: new pulumi.Config('githubOwners').requireSecret('totto2727DotfilesToken'),
-   })
-   const createRepository = createRepositoryFactory('totto2727-dotfiles', provider)
-
-   export const example = createRepository('example')
-   ```
-
-   Define the repositories and their required settings.
-   Import existing repositories before deployment, or let Pulumi create new ones.
-   Import the module in `index.ts` and include its resources in the stack outputs.
-   Keep repository and organization resources on the same owner-specific Provider.
-
-Each factory binds its resources to an owner-specific Provider and includes the owner in Pulumi resource names.
-Tokens are separate for each installation.
-However, a shared App private key can issue tokens for all of that App's installations.
-If private keys must also be separate, create one App per owner and use its credentials in the corresponding ESC token entry.
-The Provider structure does not need to change.
+Each owner has a separate Provider and ESC installation token.
+Organization settings and memberships use the corresponding owner-specific Provider.
+Repository resources exist only for `totto2727-org` and `totto2727-dotfiles`.
+A shared App private key can issue tokens for all installations of that App.
+Separate Apps and private keys are required when credential isolation between owners is required.
 
 ## Checks
 

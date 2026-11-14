@@ -1,5 +1,5 @@
 name: github
-description: Organization security settings, teams, and repository policies for workspace owners
+description: Organization settings, memberships, and repository policies for workspace owners
 runtime:
   name: nodejs
   options:
