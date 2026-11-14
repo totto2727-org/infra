@@ -131,6 +131,24 @@ export const effront = createRepository('effront', {
   sourceOwner: 'nikhilsnayak',
   sourceRepo: 'effective-rsc',
 })
+export const effectHttp = createRepository(
+  'effect-http',
+  {
+    description: 'Small HTTP negotiation, caching, and security utilities for Effect, inspired by Hono',
+    template: template('template-vite-plus-lib'),
+  },
+  ['check'],
+  { import: 'effect-http' },
+)
+export const effectIdentify = createRepository(
+  'effect-identify',
+  {
+    description: 'Minimal user-defined and prefixed UUIDv4 identifiers for Effect',
+    template: template('template-vite-plus-lib'),
+  },
+  ['check'],
+  { import: 'effect-identify' },
+)
 export const e2e = createRepository('e2e', {
   description: 'Reusable Go CLI end-to-end test helpers',
 })
