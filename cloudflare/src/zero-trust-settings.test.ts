@@ -50,6 +50,7 @@ const expectedResources = [
       warpAuthNonBrowser401: false,
       denyUnmatchedRequests: false,
       denyUnmatchedRequestsExemptedZoneNames: [],
+      strictServiceTokenAuth: false,
       serviceTokenInactivity: {
         enabled: false,
         action: 'disable',
@@ -228,10 +229,12 @@ test('keeps inactivity enforcement disabled with valid explicit inputs rather th
     action: 'disable',
     inactivityThresholdDays: 30,
   })
-  expect(organization?.inputs).not.toHaveProperty('strictServiceTokenAuth')
-  expect(options.get('iac-prod-zero-trust-organization')).toEqual(
-    expect.objectContaining({ ignoreChanges: ['strictServiceTokenAuth'] }),
-  )
+})
+
+test('manages the observed disabled strict service-token authentication without ignoring drift', () => {
+  const organization = resources.find((resource) => resource.name === 'iac-prod-zero-trust-organization')
+  expect(organization?.inputs).toHaveProperty('strictServiceTokenAuth', false)
+  expect(options.get('iac-prod-zero-trust-organization')).not.toHaveProperty('ignoreChanges')
 })
 
 test('OTP omits computed callbacks and SCIM configuration unsupported by onetimepin', () => {
