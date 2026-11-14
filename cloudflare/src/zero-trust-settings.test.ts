@@ -50,6 +50,11 @@ const expectedResources = [
       warpAuthNonBrowser401: false,
       denyUnmatchedRequests: false,
       denyUnmatchedRequestsExemptedZoneNames: [],
+      serviceTokenInactivity: {
+        enabled: false,
+        action: 'disable',
+        inactivityThresholdDays: 30,
+      },
     },
   },
   {
@@ -216,12 +221,16 @@ test('uses authorized native singleton initialization for the five existing devi
   expect(options.get('iac-prod-device-settings')).not.toHaveProperty('import')
 })
 
-test('does not fabricate disabled organization inactivity values or redacted authentication settings', () => {
+test('keeps inactivity enforcement disabled with valid explicit inputs rather than reusing incomplete imported state', () => {
   const organization = resources.find((resource) => resource.name === 'iac-prod-zero-trust-organization')
-  expect(organization?.inputs).not.toHaveProperty('serviceTokenInactivity')
+  expect(organization?.inputs).toHaveProperty('serviceTokenInactivity', {
+    enabled: false,
+    action: 'disable',
+    inactivityThresholdDays: 30,
+  })
   expect(organization?.inputs).not.toHaveProperty('strictServiceTokenAuth')
   expect(options.get('iac-prod-zero-trust-organization')).toEqual(
-    expect.objectContaining({ ignoreChanges: ['serviceTokenInactivity', 'strictServiceTokenAuth'] }),
+    expect.objectContaining({ ignoreChanges: ['strictServiceTokenAuth'] }),
   )
 })
 

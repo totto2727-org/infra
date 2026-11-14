@@ -6,10 +6,6 @@ import { iamCatalogLimit, namedIamId } from './iam-reference.ts'
 const administratorName = 'Super Administrator - All Privileges'
 const accountScopeName = `com.cloudflare.api.account.${config.accountID}`
 
-const administratorRoleId = cloudflare
-  .getAccountRolesOutput({ accountId: config.accountID, maxItems: iamCatalogLimit })
-  .apply(({ results }) => namedIamId(results, administratorName))
-
 const administratorPermissionGroupId = cloudflare
   .getAccountPermissionGroupsOutput({
     accountId: config.accountID,
@@ -29,7 +25,6 @@ export const accountMember = new cloudflare.AccountMember(
     accountId: config.accountID,
     email: 'kaihatu.totto2727@gmail.com',
     status: 'accepted',
-    roles: [administratorRoleId],
     policies: [
       {
         access: 'allow',

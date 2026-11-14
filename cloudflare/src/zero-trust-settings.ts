@@ -2,14 +2,8 @@ import * as cloudflare from '@pulumi/cloudflare'
 
 import * as config from './config.ts'
 
-// Native serviceTokenInactivity is optional, but its action and threshold are
-// required non-null when supplied. Omit the disabled policy rather than invent
-// an action/threshold or replace nulls with {}. Optional permits omission but is
-// not proof of preservation: native Update calls state-aware MarshalForUpdate.
-// ignoreChanges explicitly retains imported inactivity state on later updates.
-// strict_service_token_auth is computed_optional and redacted in saved evidence.
-// cache_device_posture, disable_end_user_app_creation and trusted_accounts have
-// no native inputs. has_migrated_private_apps is server migration metadata.
+// Enforcement stays disabled. The provider requires action/threshold even then;
+// these are explicit inactive defaults, not values read from the account.
 export const zeroTrustOrganization = new cloudflare.ZeroTrustOrganization(
   config.resourceName('zero-trust-organization'),
   {
@@ -22,11 +16,16 @@ export const zeroTrustOrganization = new cloudflare.ZeroTrustOrganization(
     warpAuthNonBrowser401: false,
     denyUnmatchedRequests: false,
     denyUnmatchedRequestsExemptedZoneNames: [],
+    serviceTokenInactivity: {
+      enabled: false,
+      action: 'disable',
+      inactivityThresholdDays: 30,
+    },
   },
   {
     import: config.accountID,
     protect: true,
-    ignoreChanges: ['serviceTokenInactivity', 'strictServiceTokenAuth'],
+    ignoreChanges: ['strictServiceTokenAuth'],
   },
 )
 
