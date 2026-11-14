@@ -16,6 +16,7 @@ export const zeroTrustOrganization = new cloudflare.ZeroTrustOrganization(
     warpAuthNonBrowser401: false,
     denyUnmatchedRequests: false,
     denyUnmatchedRequestsExemptedZoneNames: [],
+    strictServiceTokenAuth: false,
     serviceTokenInactivity: {
       enabled: false,
       action: 'disable',
@@ -25,7 +26,6 @@ export const zeroTrustOrganization = new cloudflare.ZeroTrustOrganization(
   {
     import: config.accountID,
     protect: true,
-    ignoreChanges: ['strictServiceTokenAuth'],
   },
 )
 
