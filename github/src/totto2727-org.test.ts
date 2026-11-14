@@ -66,7 +66,7 @@ test.each([
 })
 
 test.each(['effect-http', 'effect-identify'])(
-  'adopts existing private %s without changing its template source',
+  'adopts existing %s with the shared public security policy without changing its template source',
   (name) => {
     const repository = resources.find((resource) => resource.name === `repository-totto2727-org-${name}`)
     expect(repository).toMatchObject({
@@ -74,7 +74,11 @@ test.each(['effect-http', 'effect-identify'])(
       inputs: {
         name,
         hasIssues: true,
-        visibility: 'private',
+        visibility: 'public',
+        securityAndAnalysis: {
+          secretScanning: { status: 'enabled' },
+          secretScanningPushProtection: { status: 'enabled' },
+        },
         template: {
           includeAllBranches: false,
           owner: 'totto2727-org',
@@ -83,6 +87,5 @@ test.each(['effect-http', 'effect-identify'])(
       },
     })
     expect(repository?.provider).toContain('pulumi:providers:github::totto2727-org::id-totto2727-org')
-    expect(repository?.inputs).not.toHaveProperty('securityAndAnalysis')
   },
 )

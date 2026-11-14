@@ -135,10 +135,7 @@ export const effectHttp = createRepository(
   'effect-http',
   {
     description: 'Small HTTP negotiation, caching, and security utilities for Effect, inspired by Hono',
-    // Preserve existing private-repository security settings without enrolling paid features.
-    securityAndAnalysis: undefined,
     template: template('template-vite-plus-lib'),
-    visibility: 'private',
   },
   ['check'],
   { import: 'effect-http' },
@@ -147,9 +144,7 @@ export const effectIdentify = createRepository(
   'effect-identify',
   {
     description: 'Minimal user-defined and prefixed UUIDv4 identifiers for Effect',
-    securityAndAnalysis: undefined,
     template: template('template-vite-plus-lib'),
-    visibility: 'private',
   },
   ['check'],
   { import: 'effect-identify' },
