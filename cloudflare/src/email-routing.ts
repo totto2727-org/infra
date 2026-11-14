@@ -8,15 +8,15 @@ export const emailRoutingSettings = new cloudflare.EmailRoutingSettings(
   { import: zoneID, protect: true },
 )
 
-// Native Create posts to /zones/{zone_id}/email/routing/dns to configure DNS.
-// Use Create rather than the zone-only importer, which cannot select a subdomain.
-// The first apply can change service-managed DNS, including SPF.
+// The zone-only importer adopts existing apex DNS without configuring it again.
+// The API's optional name selects a subdomain, not the zone's apex.
 export const emailRoutingApexDns = new cloudflare.EmailRoutingDns(
   resourceName('email-routing-apex-dns'),
-  { zoneId: zoneID, name: 'totto2727.dev' },
-  { protect: true, dependsOn: [emailRoutingSettings] },
+  { zoneId: zoneID },
+  { import: zoneID, protect: true, dependsOn: [emailRoutingSettings] },
 )
 
+// Native Create configures subdomain DNS, including SPF; the importer cannot select it.
 export const emailRoutingSubdomainDns = new cloudflare.EmailRoutingDns(
   resourceName('email-routing-subdomain-dns'),
   { zoneId: zoneID, name: 'email.totto2727.dev', subdomain: 'email.totto2727.dev' },

@@ -55,9 +55,9 @@ describe('Email Routing adoption', () => {
     ])
   })
 
-  test('imports settings and catch-all while configuring DNS through protected native Create', () => {
+  test('imports apex DNS, settings and catch-all while creating only the subdomain DNS controller', () => {
     expect(imports.toSorted((left, right) => left.name.localeCompare(right.name))).toEqual([
-      { name: 'iac-prod-email-routing-apex-dns', id: '', protect: true },
+      { name: 'iac-prod-email-routing-apex-dns', id: '502c8e36ae3b0e13da67e015e67c6b35', protect: true },
       { name: 'iac-prod-email-routing-catch-all', id: '502c8e36ae3b0e13da67e015e67c6b35', protect: true },
       { name: 'iac-prod-email-routing-settings', id: '502c8e36ae3b0e13da67e015e67c6b35', protect: true },
       { name: 'iac-prod-email-routing-subdomain-dns', id: '', protect: true },
@@ -79,7 +79,6 @@ describe('Email Routing adoption', () => {
         name: 'iac-prod-email-routing-apex-dns',
         inputs: {
           zoneId: '502c8e36ae3b0e13da67e015e67c6b35',
-          name: 'totto2727.dev',
         },
       },
       {

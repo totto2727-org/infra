@@ -65,7 +65,7 @@ Deletion candidates are excluded from adoption, not deleted by this program.
 | ----------------------------------------------------------------------- | --------------------------------------------------------------------------------------- |
 | Resources with native import support                                    | Import existing identity; review any settings updates                                   |
 | DNS, schema and device singleton settings without native import support | Create Pulumi state through the native provider's update endpoint using observed values |
-| Apex/subdomain Email Routing DNS controllers                            | Configure generated mail DNS through native Create; no zone-only import for subdomains  |
+| Subdomain Email Routing DNS controller                                  | Configure generated mail DNS through native Create; no zone-only import for subdomains  |
 | Existing Access and AI Gateway resources                                | Unchanged identities and outputs                                                        |
 
 All declared resources use `protect: true`.
