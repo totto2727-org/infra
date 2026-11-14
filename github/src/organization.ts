@@ -3,17 +3,17 @@ import type * as pulumi from '@pulumi/pulumi'
 
 export const organizationSettings = {
   advancedSecurityEnabledForNewRepositories: false,
-  defaultRepositoryPermission: 'none',
+  defaultRepositoryPermission: 'write',
   dependabotAlertsEnabledForNewRepositories: true,
   dependabotSecurityUpdatesEnabledForNewRepositories: true,
   dependencyGraphEnabledForNewRepositories: true,
   membersCanCreateInternalRepositories: false,
   membersCanCreatePages: false,
   membersCanCreatePrivatePages: false,
-  membersCanCreatePrivateRepositories: false,
+  membersCanCreatePrivateRepositories: true,
   membersCanCreatePublicPages: false,
-  membersCanCreatePublicRepositories: false,
-  membersCanCreateRepositories: false,
+  membersCanCreatePublicRepositories: true,
+  membersCanCreateRepositories: true,
   membersCanForkPrivateRepositories: false,
   secretScanningEnabledForNewRepositories: true,
   secretScanningPushProtectionEnabledForNewRepositories: true,
@@ -25,7 +25,7 @@ export const createOrganization = ({
   provider,
   billingEmail,
 }: {
-  owner: 'totto2727-org' | 'totto2727-dotfiles'
+  owner: 'totto2727-org' | 'totto2727-dotfiles' | 'totto2727-archive'
   provider: github.Provider
   billingEmail: pulumi.Input<string>
 }) => {

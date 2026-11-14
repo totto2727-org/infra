@@ -1,4 +1,5 @@
-import { totto2727Dotfiles, totto2727Org } from './src/organizations.ts'
+import './src/memberships.ts'
+import { totto2727Archive, totto2727Dotfiles, totto2727Org } from './src/organizations.ts'
 import * as dotfiles from './src/totto2727-dotfiles.ts'
 import * as org from './src/totto2727-org.ts'
 
@@ -11,3 +12,4 @@ export const vulnerabilityAlertIds = Object.values(repositories).map(
 )
 export const totto2727OrgId = totto2727Org.settings.id
 export const totto2727DotfilesId = totto2727Dotfiles.settings.id
+export const totto2727ArchiveId = totto2727Archive.settings.id

@@ -20,7 +20,7 @@ test('unifies organization policy and preserves owner isolation without managing
     'github',
     'production',
   )
-  const organizations = (['totto2727-org', 'totto2727-dotfiles'] as const).map((owner) => {
+  const organizations = (['totto2727-org', 'totto2727-dotfiles', 'totto2727-archive'] as const).map((owner) => {
     const provider = new github.Provider(owner, { owner, token: pulumi.secret(`test-${owner}-token`) })
     return createOrganization({
       billingEmail: pulumi.secret(`billing-${owner}@example.invalid`),
@@ -35,7 +35,7 @@ test('unifies organization policy and preserves owner isolation without managing
   await promise
 
   expect(new Set(resources.map(({ name }) => name)).size).toBe(resources.length)
-  for (const owner of ['totto2727-org', 'totto2727-dotfiles']) {
+  for (const owner of ['totto2727-org', 'totto2727-dotfiles', 'totto2727-archive']) {
     expect(resources.find(({ name }) => name === `organization-${owner}`)?.inputs).toMatchObject({
       ...organizationSettings,
       billingEmail: {
@@ -68,31 +68,34 @@ test('unifies organization policy and preserves owner isolation without managing
       expect(settings).not.toHaveProperty(field)
     }
   }
-  expect(resources.some(({ name }) => name.includes('archive'))).toBe(false)
+  expect(resources.filter(({ type }) => type.includes('membership') || type.includes('team'))).toHaveLength(0)
   expect(resources.map(({ type }) => type).toSorted()).toEqual([
     'github:index/actionsOrganizationWorkflowPermissions:ActionsOrganizationWorkflowPermissions',
     'github:index/actionsOrganizationWorkflowPermissions:ActionsOrganizationWorkflowPermissions',
+    'github:index/actionsOrganizationWorkflowPermissions:ActionsOrganizationWorkflowPermissions',
     'github:index/organizationSettings:OrganizationSettings',
     'github:index/organizationSettings:OrganizationSettings',
+    'github:index/organizationSettings:OrganizationSettings',
+    'pulumi:providers:github',
     'pulumi:providers:github',
     'pulumi:providers:github',
   ])
 })
 
-test('uses least privilege and free security defaults without enabling paid Advanced Security', () => {
+test('allows member repository writes and creation with read-only workflow defaults and no paid security enrollment', () => {
   expect(organizationSettings).toEqual({
     advancedSecurityEnabledForNewRepositories: false,
-    defaultRepositoryPermission: 'none',
+    defaultRepositoryPermission: 'write',
     dependabotAlertsEnabledForNewRepositories: true,
     dependabotSecurityUpdatesEnabledForNewRepositories: true,
     dependencyGraphEnabledForNewRepositories: true,
     membersCanCreateInternalRepositories: false,
     membersCanCreatePages: false,
     membersCanCreatePrivatePages: false,
-    membersCanCreatePrivateRepositories: false,
+    membersCanCreatePrivateRepositories: true,
     membersCanCreatePublicPages: false,
-    membersCanCreatePublicRepositories: false,
-    membersCanCreateRepositories: false,
+    membersCanCreatePublicRepositories: true,
+    membersCanCreateRepositories: true,
     membersCanForkPrivateRepositories: false,
     secretScanningEnabledForNewRepositories: true,
     secretScanningPushProtectionEnabledForNewRepositories: true,

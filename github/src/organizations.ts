@@ -1,6 +1,7 @@
 import * as pulumi from '@pulumi/pulumi'
 
 import { createOrganization } from './organization.ts'
+import { archiveProvider } from './totto2727-archive-provider.ts'
 import { dotfilesProvider } from './totto2727-dotfiles-provider.ts'
 import { orgProvider } from './totto2727-org-provider.ts'
 
@@ -16,4 +17,10 @@ export const totto2727Dotfiles = createOrganization({
   billingEmail: config.requireSecret('totto2727DotfilesBillingEmail'),
   owner: 'totto2727-dotfiles',
   provider: dotfilesProvider,
+})
+
+export const totto2727Archive = createOrganization({
+  billingEmail: config.requireSecret('totto2727ArchiveBillingEmail'),
+  owner: 'totto2727-archive',
+  provider: archiveProvider,
 })
