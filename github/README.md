@@ -215,9 +215,11 @@ The `template` setting selects a source. It does not mark the resulting reposito
 The third factory argument selects required CI contexts and defaults to `['check']`.
 Use the actual workflow check names. Use `[]` only when the repository has no applicable CI check.
 
-For an existing repository, import it before you apply the declaration.
+For an existing repository, set the fourth factory argument to `{ import: '<existing-name>' }` to adopt it during the reviewed update rather than create a duplicate.
+Alternatively, import it before you apply the declaration.
 Its Pulumi logical name is `repository-<owner>-<name>` and its import ID is the existing repository name.
 Use credentials for the same owner.
+Set `visibility` explicitly to the existing value because the shared default is public.
 Keep existing fork and template source values in its declaration.
 Do not change creation-only source values on an existing repository: that can require replacement.
 Check the preview for unexpected creation, replacement, deletion, or renaming before every deployment.

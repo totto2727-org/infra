@@ -41,6 +41,8 @@ test.each([
   { repository: 'projektor', contexts: ['check'] },
   { repository: 'mdts', contexts: ['check'] },
   { repository: 'nix-cache', contexts: ['check'] },
+  { repository: 'effect-http', contexts: ['check'] },
+  { repository: 'effect-identify', contexts: ['check'] },
 ])('requires the current $repository CI checks without weakening branch protection', ({ repository, contexts }) => {
   expect(resources.find(({ name }) => name === `default-branch-totto2727-org-${repository}`)?.inputs).toMatchObject({
     conditions: { refName: { excludes: [], includes: ['~DEFAULT_BRANCH'] } },
@@ -62,3 +64,25 @@ test.each([
     target: 'branch',
   })
 })
+
+test.each(['effect-http', 'effect-identify'])(
+  'adopts existing private %s without changing its template source',
+  (name) => {
+    const repository = resources.find((resource) => resource.name === `repository-totto2727-org-${name}`)
+    expect(repository).toMatchObject({
+      id: name,
+      inputs: {
+        name,
+        hasIssues: true,
+        visibility: 'private',
+        template: {
+          includeAllBranches: false,
+          owner: 'totto2727-org',
+          repository: 'template-vite-plus-lib',
+        },
+      },
+    })
+    expect(repository?.provider).toContain('pulumi:providers:github::totto2727-org::id-totto2727-org')
+    expect(repository?.inputs).not.toHaveProperty('securityAndAnalysis')
+  },
+)
