@@ -29,7 +29,8 @@ test('loads both organizations and all repositories without creating teams or ch
   const { promise, resolve } = Promise.withResolvers<string[]>()
   pulumi
     .all([
-      ...Object.values(stack.organizationIds),
+      stack.totto2727OrgId,
+      stack.totto2727DotfilesId,
       ...stack.rulesetIds,
       ...stack.vulnerabilityAlertIds,
       ...Object.values(organizations).map(({ workflowPermissions }) => workflowPermissions.id),
@@ -37,7 +38,7 @@ test('loads both organizations and all repositories without creating teams or ch
     .apply((ids) => resolve(ids))
   const ids = await promise
   expect(ids.slice(0, 2)).toEqual(['id-organization-totto2727-org', 'id-organization-totto2727-dotfiles'])
-  expect(Object.keys(stack.organizationIds)).toEqual(['totto2727-org', 'totto2727-dotfiles'])
+  expect(stack).not.toHaveProperty('organizationIds')
 
   const providers = resources.filter(({ type }) => type === 'pulumi:providers:github')
   expect(providers.map(({ name }) => name).toSorted()).toEqual(['totto2727-dotfiles', 'totto2727-org'])
