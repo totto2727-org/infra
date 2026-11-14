@@ -48,6 +48,7 @@ Email Routing owns MX, DKIM and SPF records; only the independent DMARC record i
 | Existing Web Analytics all-host rule                                           | 既存IDの取り込み非対応 |
 | Worker bindings, custom domains, Pages sites and CNAMEs                        | 他アプリ管理           |
 | Worker DNS, Email Routing mail DNS and service-issued TLS/Gateway certificates | 自動生成               |
+| Account/Zone SOA defaults                                                      | カスタム変更契約なし   |
 | Cloudflare-managed ruleset catalogs and predefined network objects             | Cloudflare管理         |
 | Root redirect, origin and transform ruleset bodies                             | 設定内容未取得         |
 | Unavailable product configuration                                              | 未使用・調査制限       |

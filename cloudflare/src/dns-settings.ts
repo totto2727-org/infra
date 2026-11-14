@@ -5,8 +5,8 @@ import * as config from './config.ts'
 // Native provider 6.23.3 Create calls SettingAccountService.Edit and SettingZoneService.Edit:
 // PATCH /accounts/{account_id}/dns_settings and /zones/{zone_id}/dns_settings.
 // These idempotently update existing singletons, not accounts or zones. Import is unsupported.
-// Null SOA mname and internal_dns.reference_zone_id remain omitted because native inputs
-// accept strings, not null. Do not substitute an assigned nameserver or fallback zone.
+// Custom SOA writes are unavailable for this account/zone; Cloudflare owns the SOA defaults.
+// Null internal_dns.reference_zone_id remains omitted rather than inventing a fallback zone.
 export const accountDnsSettings = new cloudflare.AccountDnsSettings(
   config.resourceName('account-dns-settings'),
   {
@@ -14,19 +14,10 @@ export const accountDnsSettings = new cloudflare.AccountDnsSettings(
     // enforce_dns_only is absent from the snapshot, not observed false.
     zoneDefaults: {
       flattenAllCnames: false,
-      foundationDns: false,
       multiProvider: false,
       nameservers: { type: 'cloudflare.standard' },
       nsTtl: 86400,
       secondaryOverrides: false,
-      soa: {
-        expire: 604800,
-        minTtl: 1800,
-        refresh: 10000,
-        retry: 2400,
-        rname: 'dns.cloudflare.com',
-        ttl: 3600,
-      },
       zoneMode: 'standard',
     },
   },
@@ -38,19 +29,10 @@ export const zoneDnsSettings = new cloudflare.ZoneDnsSettings(
   {
     zoneId: config.zoneID,
     flattenAllCnames: false,
-    foundationDns: false,
     multiProvider: false,
     nameservers: { type: 'cloudflare.standard' },
     nsTtl: 86400,
     secondaryOverrides: false,
-    soa: {
-      expire: 604800,
-      minTtl: 1800,
-      refresh: 10000,
-      retry: 2400,
-      rname: 'dns.cloudflare.com',
-      ttl: 3600,
-    },
     zoneMode: 'standard',
   },
   { protect: true },
