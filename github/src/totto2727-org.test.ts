@@ -43,6 +43,7 @@ test.each([
   { repository: 'nix-cache', contexts: ['check'] },
   { repository: 'effect-http', contexts: ['check'] },
   { repository: 'effect-identify', contexts: ['check'] },
+  { repository: 'serde', contexts: ['check'] },
 ])('requires the current $repository CI checks without weakening branch protection', ({ repository, contexts }) => {
   expect(resources.find(({ name }) => name === `default-branch-totto2727-org-${repository}`)?.inputs).toMatchObject({
     conditions: { refName: { excludes: [], includes: ['~DEFAULT_BRANCH'] } },
@@ -63,6 +64,19 @@ test.each([
     },
     target: 'branch',
   })
+})
+
+test('adopts the existing public Serde repository without changing its creation source', () => {
+  const repository = resources.find(({ name }) => name === 'repository-totto2727-org-serde')
+  expect(repository).toMatchObject({
+    id: 'serde',
+    inputs: {
+      name: 'serde',
+      hasIssues: true,
+      visibility: 'public',
+    },
+  })
+  expect(repository?.inputs).not.toHaveProperty('template')
 })
 
 test.each(['effect-http', 'effect-identify'])(

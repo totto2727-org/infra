@@ -165,6 +165,15 @@ export const gitignorePatterns = createRepository('gitignore-patterns', {
 export const lens = createRepository('lens', {
   description: 'Typed JSON traversal, construction, and aggregate validation for MoonBit',
 })
+export const serde = createRepository(
+  'serde',
+  {
+    description: 'Attribute-driven static JSON codec generation for MoonBit',
+    visibility: 'public',
+  },
+  ['check'],
+  { import: 'serde' },
+)
 export const workgraph = createRepository('workgraph', {
   description:
     'Typed MoonBit workflow graphs with state reducers, scoped resources, LLM nodes, and coding-agent adapters',
