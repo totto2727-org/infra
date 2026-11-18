@@ -41,6 +41,8 @@ test.each([
   { repository: 'projektor', contexts: ['check'] },
   { repository: 'mdts', contexts: ['check'] },
   { repository: 'nix-cache', contexts: ['check'] },
+  { repository: 'effect-http', contexts: ['check'] },
+  { repository: 'effect-identify', contexts: ['check'] },
   { repository: 'serde', contexts: ['check'] },
 ])('requires the current $repository CI checks without weakening branch protection', ({ repository, contexts }) => {
   expect(resources.find(({ name }) => name === `default-branch-totto2727-org-${repository}`)?.inputs).toMatchObject({
@@ -76,3 +78,28 @@ test('adopts the existing public Serde repository without changing its creation 
   })
   expect(repository?.inputs).not.toHaveProperty('template')
 })
+
+test.each(['effect-http', 'effect-identify'])(
+  'adopts existing %s with the shared public security policy without changing its template source',
+  (name) => {
+    const repository = resources.find((resource) => resource.name === `repository-totto2727-org-${name}`)
+    expect(repository).toMatchObject({
+      id: name,
+      inputs: {
+        name,
+        hasIssues: true,
+        visibility: 'public',
+        securityAndAnalysis: {
+          secretScanning: { status: 'enabled' },
+          secretScanningPushProtection: { status: 'enabled' },
+        },
+        template: {
+          includeAllBranches: false,
+          owner: 'totto2727-org',
+          repository: 'template-vite-plus-lib',
+        },
+      },
+    })
+    expect(repository?.provider).toContain('pulumi:providers:github::totto2727-org::id-totto2727-org')
+  },
+)
