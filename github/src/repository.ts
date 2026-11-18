@@ -1,13 +1,19 @@
 import * as github from '@pulumi/github'
+import type * as pulumi from '@pulumi/pulumi'
 
 import { defaultBranchRules, repositorySettings } from './policy.ts'
 
 export const createRepositoryFactory = (owner: string, provider: github.Provider) => {
-  return (name: string, settings: github.RepositoryArgs = {}, requiredChecks: readonly string[] = ['check']) => {
+  return (
+    name: string,
+    settings: github.RepositoryArgs = {},
+    requiredChecks: readonly string[] = ['check'],
+    adoption: Pick<pulumi.CustomResourceOptions, 'import'> = {},
+  ) => {
     const repository = new github.Repository(
       `repository-${owner}-${name}`,
       { ...repositorySettings, ...settings, name },
-      { protect: true, provider, retainOnDelete: true },
+      { ...adoption, protect: true, provider, retainOnDelete: true },
     )
     const ruleset = new github.RepositoryRuleset(
       `default-branch-${owner}-${name}`,

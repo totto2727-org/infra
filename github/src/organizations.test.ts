@@ -63,7 +63,7 @@ test('loads three organizations and explicit memberships without managing archiv
     }
   }
   const repositories = resources.filter(({ type }) => type === 'github:index/repository:Repository')
-  expect(repositories).toHaveLength(38)
+  expect(repositories).toHaveLength(40)
   expect(resources.filter(({ type }) => type === 'github:index/team:Team')).toHaveLength(0)
   expect(resources.filter(({ type }) => type === 'github:index/teamMembers:TeamMembers')).toHaveLength(0)
   expect(resources.filter(({ type }) => type === 'github:index/teamRepository:TeamRepository')).toHaveLength(0)
@@ -85,10 +85,10 @@ test('loads three organizations and explicit memberships without managing archiv
       `repository-${repository.inputs['name'] === 'nix' ? 'totto2727-dotfiles' : 'totto2727-org'}-${repository.inputs['name']}`,
     )
   }
-  expect(resources.filter(({ type }) => type === 'github:index/repositoryRuleset:RepositoryRuleset')).toHaveLength(38)
+  expect(resources.filter(({ type }) => type === 'github:index/repositoryRuleset:RepositoryRuleset')).toHaveLength(40)
   expect(
     resources.filter(({ type }) => type === 'github:index/repositoryVulnerabilityAlerts:RepositoryVulnerabilityAlerts'),
-  ).toHaveLength(38)
+  ).toHaveLength(40)
   expect(new Set(resources.map(({ name }) => name)).size).toBe(resources.length)
   expect(repositories.some(({ name }) => name.includes('archive'))).toBe(false)
   expect(
