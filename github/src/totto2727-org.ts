@@ -99,6 +99,30 @@ export const reylo = createRepository(
   },
   ['SQLite and HCL on ubuntu-latest', 'SQLite and HCL on windows-latest'],
 )
+export const syntreeMbt = createRepository(
+  'syntree.mbt',
+  {
+    description: 'Incremental syntax tree and highlighting toolkit for MoonBit',
+    fork: 'true',
+    hasIssues: false,
+    sourceOwner: 'mizchi',
+    sourceRepo: 'syntree.mbt',
+  },
+  ['check'],
+  { import: 'syntree.mbt' },
+)
+export const tuiMbt = createRepository(
+  'tui.mbt',
+  {
+    description: 'Terminal UI library for MoonBit',
+    fork: 'true',
+    hasIssues: false,
+    sourceOwner: 'mizchi',
+    sourceRepo: 'tui.mbt',
+  },
+  ['check'],
+  { import: 'tui.mbt' },
+)
 export const admiral = createRepository('admiral', {
   description: 'Declarative CLI builder for MoonBit, inspired by gunshi',
   fork: 'true',

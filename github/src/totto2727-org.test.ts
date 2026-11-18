@@ -44,6 +44,8 @@ test.each([
   { repository: 'effect-http', contexts: ['check'] },
   { repository: 'effect-identify', contexts: ['check'] },
   { repository: 'serde', contexts: ['check'] },
+  { repository: 'syntree.mbt', contexts: ['check'] },
+  { repository: 'tui.mbt', contexts: ['check'] },
 ])('requires the current $repository CI checks without weakening branch protection', ({ repository, contexts }) => {
   expect(resources.find(({ name }) => name === `default-branch-totto2727-org-${repository}`)?.inputs).toMatchObject({
     conditions: { refName: { excludes: [], includes: ['~DEFAULT_BRANCH'] } },
@@ -64,6 +66,22 @@ test.each([
     },
     target: 'branch',
   })
+})
+
+test.each(['syntree.mbt', 'tui.mbt'])('adopts the existing public %s fork with its upstream source', (name) => {
+  const repository = resources.find((resource) => resource.name === `repository-totto2727-org-${name}`)
+  expect(repository).toMatchObject({
+    id: name,
+    inputs: {
+      name,
+      fork: 'true',
+      hasIssues: false,
+      sourceOwner: 'mizchi',
+      sourceRepo: name,
+      visibility: 'public',
+    },
+  })
+  expect(repository?.inputs).not.toHaveProperty('template')
 })
 
 test('adopts the existing public Serde repository without changing its creation source', () => {
