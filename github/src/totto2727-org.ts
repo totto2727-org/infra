@@ -202,6 +202,7 @@ export const serde = createRepository(
   'serde',
   {
     description: 'Attribute-driven static JSON codec generation for MoonBit',
+    template: template('template-moonbit-simple'),
     visibility: 'public',
   },
   ['check'],
