@@ -103,17 +103,21 @@ test('adopts the public moon-nix fork without requiring a nonexistent CI check',
   expect(ruleset?.inputs.rules).not.toHaveProperty('requiredStatusChecks')
 })
 
-test('adopts the existing public Serde repository without changing its creation source', () => {
+test('adopts the existing public Serde repository with its original template', () => {
   const repository = resources.find(({ name }) => name === 'repository-totto2727-org-serde')
   expect(repository).toMatchObject({
     id: 'serde',
     inputs: {
       name: 'serde',
       hasIssues: true,
+      template: {
+        includeAllBranches: false,
+        owner: 'totto2727-org',
+        repository: 'template-moonbit-simple',
+      },
       visibility: 'public',
     },
   })
-  expect(repository?.inputs).not.toHaveProperty('template')
 })
 
 test.each(['effect-http', 'effect-identify'])(
