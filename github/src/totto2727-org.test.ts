@@ -46,6 +46,7 @@ test.each([
   { repository: 'serde', contexts: ['check'] },
   { repository: 'syntree.mbt', contexts: ['check'] },
   { repository: 'tui.mbt', contexts: ['check'] },
+  { repository: 'llm', contexts: ['test'] },
 ])('requires the current $repository CI checks without weakening branch protection', ({ repository, contexts }) => {
   expect(resources.find(({ name }) => name === `default-branch-totto2727-org-${repository}`)?.inputs).toMatchObject({
     conditions: { refName: { excludes: [], includes: ['~DEFAULT_BRANCH'] } },
@@ -68,7 +69,7 @@ test.each([
   })
 })
 
-test.each(['syntree.mbt', 'tui.mbt'])('adopts the existing public %s fork with its upstream source', (name) => {
+test.each(['syntree.mbt', 'tui.mbt', 'llm'])('adopts the existing public %s fork with its upstream source', (name) => {
   const repository = resources.find((resource) => resource.name === `repository-totto2727-org-${name}`)
   expect(repository).toMatchObject({
     id: name,

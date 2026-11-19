@@ -130,6 +130,18 @@ export const admiral = createRepository('admiral', {
   sourceOwner: 'mizchi',
   sourceRepo: 'admiral',
 })
+export const llm = createRepository(
+  'llm',
+  {
+    description: 'MoonBit LLM client library',
+    fork: 'true',
+    hasIssues: false,
+    sourceOwner: 'mizchi',
+    sourceRepo: 'llm',
+  },
+  ['test'],
+  { import: 'llm' },
+)
 export const llmProfiles = createRepository('llm-profiles', {
   description: 'Shared OpenAI-compatible agent configuration with optional Rust client adapters',
   template: template('template-rust-simple'),
