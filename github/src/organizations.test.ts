@@ -1,5 +1,15 @@
 import * as pulumi from '@pulumi/pulumi'
-import { expect, test } from 'vite-plus/test'
+import { expect, expectTypeOf, test } from 'vite-plus/test'
+
+type ArrayOutputNames<Stack> = {
+  [Name in keyof Stack]: Extract<pulumi.Unwrap<Stack[Name]>, readonly unknown[]> extends never ? never : Name
+}[keyof Stack]
+
+test('AWS, Cloudflare, and GitHub stack outputs must not be arrays', () => {
+  expectTypeOf<ArrayOutputNames<typeof import('../../aws/index.ts')>>().toBeNever()
+  expectTypeOf<ArrayOutputNames<typeof import('../../cloudflare/index.ts')>>().toBeNever()
+  expectTypeOf<ArrayOutputNames<typeof import('../index.ts')>>().toBeNever()
+})
 
 test('loads three organizations and explicit memberships without managing archive repositories or teams', async () => {
   const resources: pulumi.runtime.MockResourceArgs[] = []
@@ -29,25 +39,16 @@ test('loads three organizations and explicit memberships without managing archiv
   const stack = await import('../index.ts')
   const organizations = await import('./organizations.ts')
   const memberships = await import('./memberships.ts')
+  const { promise: outputsPromise, resolve: resolveOutputs } = Promise.withResolvers<Record<string, string>>()
+  pulumi.all({ ...stack }).apply(resolveOutputs)
   const { promise, resolve } = Promise.withResolvers<string[]>()
   pulumi
     .all([
-      stack.totto2727OrgId,
-      stack.totto2727DotfilesId,
-      stack.totto2727ArchiveId,
-      ...stack.rulesetIds,
-      ...stack.vulnerabilityAlertIds,
       ...Object.values(organizations).map(({ workflowPermissions }) => workflowPermissions.id),
       ...Object.values(memberships).map(({ id }) => id),
     ])
-    .apply((ids) => resolve(ids))
-  const ids = await promise
-  expect(ids.slice(0, 3)).toEqual([
-    'id-organization-totto2727-org',
-    'id-organization-totto2727-dotfiles',
-    'id-organization-totto2727-archive',
-  ])
-  expect(stack).not.toHaveProperty('organizationIds')
+    .apply(resolve)
+  const [outputs] = await Promise.all([outputsPromise, promise])
 
   const providers = resources.filter(({ type }) => type === 'pulumi:providers:github')
   expect(providers.map(({ name }) => name).toSorted()).toEqual([
@@ -81,11 +82,26 @@ test('loads three organizations and explicit memberships without managing archiv
     { name: 'membership-totto2727-org-totto2727', username: 'totto2727', role: 'admin' },
     { name: 'membership-totto2727-org-totto2727-ai', username: 'totto2727-ai', role: 'member' },
   ])
-  for (const repository of repositories) {
-    expect(repository.name).toBe(
-      `repository-${repository.inputs['name'] === 'nix' ? 'totto2727-dotfiles' : 'totto2727-org'}-${repository.inputs['name']}`,
-    )
+  const expectedOutputs: Record<string, string> = {
+    totto2727OrgId: 'id-organization-totto2727-org',
+    totto2727DotfilesId: 'id-organization-totto2727-dotfiles',
+    totto2727ArchiveId: 'id-organization-totto2727-archive',
   }
+  for (const { name: logicalName, inputs } of repositories) {
+    const name = inputs['name']
+    if (typeof name !== 'string') throw new Error(`Expected a repository name for ${logicalName}`)
+    const [owner, ownerKey] =
+      name === 'nix' ? ['totto2727-dotfiles', 'totto2727Dotfiles'] : ['totto2727-org', 'totto2727Org']
+    const repositoryKey = name.replace(/(^|[.-])([a-z])/g, (_, _separator: string, letter: string) =>
+      letter.toUpperCase(),
+    )
+    const outputKey = `${ownerKey}${repositoryKey}`
+    expect(logicalName).toBe(`repository-${owner}-${name}`)
+    expectedOutputs[`${outputKey}RepositoryName`] = name
+    expectedOutputs[`${outputKey}RulesetId`] = `id-default-branch-${owner}-${name}`
+    expectedOutputs[`${outputKey}VulnerabilityAlertId`] = `id-vulnerability-alerts-${owner}-${name}`
+  }
+  expect(outputs).toEqual(expectedOutputs)
   expect(resources.filter(({ type }) => type === 'github:index/repositoryRuleset:RepositoryRuleset')).toHaveLength(
     repositories.length,
   )

@@ -173,6 +173,8 @@ Do not apply until authentication succeeds, existing settings are imported, and 
 ## Add a repository
 
 Add an individual `createRepository(...)` call to the module for its owner.
+In `index.ts`, add separate named outputs for the repository name, ruleset ID, and vulnerability alert ID.
+Prefix each output with the owner and repository, as in `totto2727OrgWorkspaceRepositoryName`.
 The factory applies the shared merge policy, branch rules, secret scanning, push protection, and vulnerability alerts.
 Projects and Wiki are disabled. Preserve an existing Issues setting when you import a repository.
 Use repository-specific settings only for real differences such as its description, source, template status, and CI names.

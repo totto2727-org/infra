@@ -10,6 +10,7 @@ This repository manages AWS, Cloudflare, and GitHub infrastructure with TypeScri
 - Do not add build artifacts or deployment automation for declarative Pulumi configurations.
 - Preview and deploy manually with the root Justfile after reviewing the proposed changes.
 - The Pulumi projects are `aws`, `cloudflare`, and `github`, each using a `production` stack and its corresponding ESC environment.
+- Do not export arrays from Pulumi entrypoints. Give each item its own named output so reviewers can see which item changed.
 - Keep credentials in Pulumi ESC, never in source control.
 - When adopting GitHub repositories, preserve visibility and existing protection rules.
 
