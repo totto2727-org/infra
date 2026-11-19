@@ -84,6 +84,24 @@ test.each(['syntree.mbt', 'tui.mbt'])('adopts the existing public %s fork with i
   expect(repository?.inputs).not.toHaveProperty('template')
 })
 
+test('adopts the public moon-nix fork without requiring a nonexistent CI check', () => {
+  const repository = resources.find(({ name }) => name === 'repository-totto2727-org-moon-nix')
+  expect(repository).toMatchObject({
+    id: 'moon-nix',
+    inputs: {
+      name: 'moon-nix',
+      fork: 'true',
+      hasIssues: false,
+      sourceOwner: 'moonbit-community',
+      sourceRepo: 'moon-nix',
+      visibility: 'public',
+    },
+  })
+  const ruleset = resources.find(({ name }) => name === 'default-branch-totto2727-org-moon-nix')
+  expect(ruleset?.inputs).toMatchObject({ enforcement: 'active', rules: { deletion: true, nonFastForward: true } })
+  expect(ruleset?.inputs.rules).not.toHaveProperty('requiredStatusChecks')
+})
+
 test('adopts the existing public Serde repository without changing its creation source', () => {
   const repository = resources.find(({ name }) => name === 'repository-totto2727-org-serde')
   expect(repository).toMatchObject({
