@@ -134,9 +134,6 @@ export const llmProfiles = createRepository('llm-profiles', {
   description: 'Shared OpenAI-compatible agent configuration with optional Rust client adapters',
   template: template('template-rust-simple'),
 })
-export const anyCollection = createRepository('any-collection', {
-  description: 'Mutable and persistent immutable MoonBit maps with heterogeneous values and typed references',
-})
 export const oxlint = createRepository('oxlint', {
   description: 'Custom Oxlint rules and TypeScript / Effect presets for @totto2727/oxlint',
   homepageUrl: 'https://oxlint.totto2727.dev',
