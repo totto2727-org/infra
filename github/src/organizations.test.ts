@@ -63,7 +63,7 @@ test('loads three organizations and explicit memberships without managing archiv
     }
   }
   const repositories = resources.filter(({ type }) => type === 'github:index/repository:Repository')
-  expect(repositories).toHaveLength(43)
+  expect(repositories).toHaveLength(44)
   expect(resources.filter(({ type }) => type === 'github:index/team:Team')).toHaveLength(0)
   expect(resources.filter(({ type }) => type === 'github:index/teamMembers:TeamMembers')).toHaveLength(0)
   expect(resources.filter(({ type }) => type === 'github:index/teamRepository:TeamRepository')).toHaveLength(0)

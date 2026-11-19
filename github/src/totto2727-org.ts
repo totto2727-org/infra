@@ -237,6 +237,18 @@ export const templateHaskellSimple = createRepository('template-haskell-simple',
   description: 'A simple Haskell CLI template with Nix, Cabal, and hpack',
   isTemplate: true,
 })
+export const moonNix = createRepository(
+  'moon-nix',
+  {
+    description: 'Build MoonBit projects reproducibly with Nix',
+    fork: 'true',
+    hasIssues: false,
+    sourceOwner: 'moonbit-community',
+    sourceRepo: 'moon-nix',
+  },
+  [],
+  { import: 'moon-nix' },
+)
 export const moonbitOverlay = createRepository(
   'moonbit-overlay',
   {
