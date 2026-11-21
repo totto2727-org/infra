@@ -37,7 +37,10 @@ export const projektor = new cloudflare.ZeroTrustAccessApplication(
     allowedIdps: [passkeys.id],
     appLauncherVisible: true,
     autoRedirectToIdentity: false,
-    destinations: [{ type: 'public', uri: 'projektor.totto2727.dev' }],
+    destinations: [
+      { type: 'public', uri: 'projektor.totto2727.dev' },
+      { type: 'public', uri: 'projektor-api.totto2727.dev/oauth/authorize' },
+    ],
     domain: 'projektor.totto2727.dev',
     name: config.resourceName('projektor'),
     policies: [{ id: allowPasskeys.id, precedence: 1 }],
