@@ -78,13 +78,17 @@ afterAll(() => {
 })
 
 describe('Deployment Access applications', () => {
-  test('protects both fixed hostnames without hostname stack configuration', () => {
+  test('protects the Web hosts and only the OAuth consent path on the Projektor API host', () => {
     const applications = resources.filter((resource) => resource.type === applicationType)
     expect(applications).toHaveLength(2)
 
-    for (const [name, domain] of [
-      ['projektor', 'projektor.totto2727.dev'],
-      ['cloudflare-os', 'cloudflare.totto2727.dev'],
+    for (const { name, domain, additionalDestinations } of [
+      {
+        name: 'projektor',
+        domain: 'projektor.totto2727.dev',
+        additionalDestinations: ['projektor-api.totto2727.dev/oauth/authorize'],
+      },
+      { name: 'cloudflare-os', domain: 'cloudflare.totto2727.dev', additionalDestinations: [] },
     ]) {
       expect(applications.find((application) => application.name === `iac-prod-${name}`)).toMatchObject({
         inputs: {
@@ -92,7 +96,7 @@ describe('Deployment Access applications', () => {
           allowedIdps: ['id-iac-prod-passkeys-identity-provider'],
           appLauncherVisible: true,
           autoRedirectToIdentity: false,
-          destinations: [{ type: 'public', uri: domain }],
+          destinations: [domain, ...additionalDestinations].map((uri) => ({ type: 'public', uri })),
           domain,
           name: `iac-prod-${name}`,
           policies: [{ id: 'id-iac-prod-must-authenticate-with-passkeys', precedence: 1 }],
