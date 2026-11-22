@@ -96,11 +96,10 @@ test('loads three organizations and explicit memberships without managing archiv
       letter.toUpperCase(),
     )
     const outputKey = `${ownerKey}${repositoryKey}`
-    const resourceKey = name === 'model' ? 'serde' : name
-    expect(logicalName).toBe(`repository-${owner}-${resourceKey}`)
+    expect(logicalName).toBe(`repository-${owner}-${name}`)
     expectedOutputs[`${outputKey}RepositoryName`] = name
-    expectedOutputs[`${outputKey}RulesetId`] = `id-default-branch-${owner}-${resourceKey}`
-    expectedOutputs[`${outputKey}VulnerabilityAlertId`] = `id-vulnerability-alerts-${owner}-${resourceKey}`
+    expectedOutputs[`${outputKey}RulesetId`] = `id-default-branch-${owner}-${name}`
+    expectedOutputs[`${outputKey}VulnerabilityAlertId`] = `id-vulnerability-alerts-${owner}-${name}`
   }
   expect(outputs).toEqual(expectedOutputs)
   expect(resources.filter(({ type }) => type === 'github:index/repositoryRuleset:RepositoryRuleset')).toHaveLength(

@@ -232,19 +232,20 @@ Check the preview for unexpected creation, replacement, deletion, or renaming be
 ### Reconcile the Model repository rename
 
 GitHub renamed `totto2727-org/serde` to `totto2727-org/model` without changing the repository ID `1462703310` or ruleset ID `27660985`.
-The declaration keeps the three existing Pulumi logical names and their protection settings.
+The declaration uses `model` for all three Pulumi resource names and keeps their protection settings.
 The GitHub provider treats a change to the vulnerability alert's `repository` input as a replacement, even though GitHub kept the alert setting on the same repository.
 
-If the production stack still records the old name, reconcile its checkpoint before applying the declaration.
+If the production stack still records the old name, reconcile its checkpoint once before applying the declaration.
 Use [`pulumi stack export` and `pulumi stack import`](https://www.pulumi.com/docs/support/troubleshooting/editing-state-files/) with a backup to change only these fields:
 
-| Logical name                               | Checkpoint fields to change from `serde` to `model` |
+| Previous logical name                      | Checkpoint fields to change from `serde` to `model` |
 | ------------------------------------------ | --------------------------------------------------- |
 | `repository-totto2727-org-serde`           | `id`, `inputs.name`, `outputs.name`                 |
 | `default-branch-totto2727-org-serde`       | `inputs.repository`, `outputs.repository`           |
 | `vulnerability-alerts-totto2727-org-serde` | `inputs.repository`, `outputs.repository`           |
 
-Keep the URNs, the numeric IDs, and all other settings unchanged.
+Change the `-serde` suffix of the three URNs to `-model`, including dependency references to those URNs.
+Keep the numeric IDs and all other settings unchanged.
 Keep both checkpoint files private and out of Git.
 Run a refreshed preview after import and confirm that the rename does not create, delete, or replace any of these resources.
 Do not unprotect the repository, ruleset, or alerts to make the preview pass.

@@ -8,15 +8,15 @@ export const createRepositoryFactory = (owner: string, provider: github.Provider
     name: string,
     settings: github.RepositoryArgs = {},
     requiredChecks: readonly string[] = ['check'],
-    { logicalName = name, ...adoption }: Pick<pulumi.CustomResourceOptions, 'import'> & { logicalName?: string } = {},
+    adoption: Pick<pulumi.CustomResourceOptions, 'import'> = {},
   ) => {
     const repository = new github.Repository(
-      `repository-${owner}-${logicalName}`,
+      `repository-${owner}-${name}`,
       { ...repositorySettings, ...settings, name },
       { ...adoption, protect: true, provider, retainOnDelete: true },
     )
     const ruleset = new github.RepositoryRuleset(
-      `default-branch-${owner}-${logicalName}`,
+      `default-branch-${owner}-${name}`,
       {
         // Existing rulesets and classic branch protection remain outside this stack.
         bypassActors: [
@@ -33,7 +33,7 @@ export const createRepositoryFactory = (owner: string, provider: github.Provider
       { protect: true, provider, retainOnDelete: true },
     )
     const vulnerabilityAlerts = new github.RepositoryVulnerabilityAlerts(
-      `vulnerability-alerts-${owner}-${logicalName}`,
+      `vulnerability-alerts-${owner}-${name}`,
       { enabled: true, repository: repository.name },
       { protect: true, provider, retainOnDelete: true },
     )

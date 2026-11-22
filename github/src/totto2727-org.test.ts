@@ -102,8 +102,8 @@ test('adopts the public moon-nix fork without requiring a nonexistent CI check',
   expect(ruleset?.inputs.rules).not.toHaveProperty('requiredStatusChecks')
 })
 
-test('tracks the renamed Model repository without changing its Pulumi resource names', () => {
-  const repository = resources.find(({ name }) => name === 'repository-totto2727-org-serde')
+test('tracks the renamed Model repository with its original template and protections', () => {
+  const repository = resources.find(({ name }) => name === 'repository-totto2727-org-model')
   expect(repository).toMatchObject({
     id: 'model',
     inputs: {
@@ -117,7 +117,7 @@ test('tracks the renamed Model repository without changing its Pulumi resource n
       visibility: 'public',
     },
   })
-  const ruleset = resources.find(({ name }) => name === 'default-branch-totto2727-org-serde')
+  const ruleset = resources.find(({ name }) => name === 'default-branch-totto2727-org-model')
   expect(ruleset?.inputs).toMatchObject({
     repository: 'model',
     enforcement: 'active',
@@ -127,7 +127,7 @@ test('tracks the renamed Model repository without changing its Pulumi resource n
       requiredStatusChecks: { requiredChecks: [{ context: 'check', integrationId: 15_368 }] },
     },
   })
-  const alerts = resources.find(({ name }) => name === 'vulnerability-alerts-totto2727-org-serde')
+  const alerts = resources.find(({ name }) => name === 'vulnerability-alerts-totto2727-org-model')
   expect(alerts?.inputs).toMatchObject({ repository: 'model', enabled: true })
 })
 

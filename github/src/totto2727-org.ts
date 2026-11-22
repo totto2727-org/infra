@@ -206,7 +206,7 @@ export const model = createRepository(
     visibility: 'public',
   },
   ['check'],
-  { import: 'model', logicalName: 'serde' },
+  { import: 'model' },
 )
 export const workgraph = createRepository('workgraph', {
   description:
