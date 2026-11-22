@@ -240,7 +240,7 @@ Use [`pulumi stack export` and `pulumi stack import`](https://www.pulumi.com/doc
 
 | Previous logical name                      | Checkpoint fields to change from `serde` to `model` |
 | ------------------------------------------ | --------------------------------------------------- |
-| `repository-totto2727-org-serde`           | `id`, `inputs.name`, `outputs.name`                 |
+| `repository-totto2727-org-serde`           | `id`, `inputs.name`, `outputs.id`, `outputs.name`   |
 | `default-branch-totto2727-org-serde`       | `inputs.repository`, `outputs.repository`           |
 | `vulnerability-alerts-totto2727-org-serde` | `inputs.repository`, `outputs.repository`           |
 
