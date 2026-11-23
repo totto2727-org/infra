@@ -222,6 +222,7 @@ Alternatively, import it before you apply the declaration.
 Its Pulumi logical name is `repository-<owner>-<name>` and its import ID is the existing repository name.
 Use credentials for the same owner.
 Set `visibility` explicitly to the existing value because the shared default is public.
+Preserve the existing protection rules when you adopt a repository.
 The `effect-http` and `effect-identify` declarations intentionally use the shared public visibility and secret-scanning policy rather than preserve their existing private visibility.
 This is desired infrastructure state only, not confirmation that either repository is public.
 Review and approve the visibility change before deployment because it publishes repository contents.
