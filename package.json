@@ -10,14 +10,14 @@
   "devDependencies": {
     "@totto2727/gitignore-patterns": "^0.1.0",
     "@totto2727/oxlint": "^0.2.0",
-    "@tsconfig/node-ts": "^23.6.4",
-    "@tsconfig/strictest": "^2.0.8",
+    "@tsconfig/node-ts": "^23.6.5",
+    "@tsconfig/strictest": "^2.0.9",
     "@types/node": "^25.9.9",
     "typescript": "^7.0.2",
-    "vite-plus": "^1.5.0"
+    "vite-plus": "^1.7.0"
   },
   "engines": {
     "node": ">=24"
   },
-  "packageManager": "pnpm@11.21.0"
+  "packageManager": "pnpm@11.29.0"
 }
