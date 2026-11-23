@@ -57,7 +57,7 @@ afterAll(() => vi.unstubAllEnvs())
 
 describe('Cloudflare program ownership', () => {
   test('registers native protected resources with unique identities', () => {
-    expect(resources).toHaveLength(76)
+    expect(resources).toHaveLength(77)
     expect([...entrypointNames].sort()).toEqual([...options.keys()].sort())
     expect(new Set(resources.map(({ type, name }) => `${type}/${name}`)).size).toBe(resources.length)
     expect(options.size).toBe(resources.length)
