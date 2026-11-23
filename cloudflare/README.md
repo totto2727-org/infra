@@ -56,6 +56,14 @@ just cloudflare-preview
 just cloudflare-up
 ```
 
+### OpenConnector Access
+
+The OpenConnector Access application protects the console at `open-connector.totto2727.dev` and the OAuth consent path at `open-connector-api.totto2727.dev/oauth/mcp/authorize` with the existing restricted passkey policy.
+It does not cover the other API paths or the existing CLI endpoint at `open-connector.totto2727.workers.dev`.
+The OpenConnector Wrangler configuration manages both custom domains and the OAuth KV binding separately from this stack.
+After applying the Access application, get the audience with `pulumi stack output openConnectorAccessAudience --cwd cloudflare`.
+Before exposing the new routes, configure the Worker to validate the Access JWT with this audience and the issuer `https://totto2727.cloudflareaccess.com` on the console and on both GET and POST requests to the consent path.
+
 ## Checks
 
 ```bash
