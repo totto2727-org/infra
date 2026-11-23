@@ -19,7 +19,16 @@ export default defineConfig({
     semi: false,
     singleQuote: true,
   },
-  lint: { ignorePatterns, options: { typeAware: true, typeCheck: true } },
+  lint: {
+    ignorePatterns,
+    jsPlugins: [{ name: 'rules', specifier: '@totto2727/oxlint' }],
+    options: { typeAware: true, typeCheck: true },
+    rules: {
+      'rules/no-eslint-disable-comments': 'error',
+      'rules/no-jsx-script-tag': 'error',
+      'rules/require-disable-reason': 'error',
+    },
+  },
   test: { include: ['{aws,cloudflare,github}/**/*.test.ts'] },
   run: {
     tasks: {
