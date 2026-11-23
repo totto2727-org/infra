@@ -43,7 +43,6 @@ test.each([
   { repository: 'nix-cache', contexts: ['check'] },
   { repository: 'effect-http', contexts: ['check'] },
   { repository: 'effect-identify', contexts: ['check'] },
-  { repository: 'serde', contexts: ['check'] },
   { repository: 'syntree.mbt', contexts: ['check'] },
   { repository: 'tui.mbt', contexts: ['check'] },
   { repository: 'llm', contexts: ['test'] },
@@ -103,12 +102,12 @@ test('adopts the public moon-nix fork without requiring a nonexistent CI check',
   expect(ruleset?.inputs.rules).not.toHaveProperty('requiredStatusChecks')
 })
 
-test('adopts the existing public Serde repository with its original template', () => {
-  const repository = resources.find(({ name }) => name === 'repository-totto2727-org-serde')
+test('tracks the renamed Model repository with its original template and protections', () => {
+  const repository = resources.find(({ name }) => name === 'repository-totto2727-org-model')
   expect(repository).toMatchObject({
-    id: 'serde',
+    id: 'model',
     inputs: {
-      name: 'serde',
+      name: 'model',
       hasIssues: true,
       template: {
         includeAllBranches: false,
@@ -118,6 +117,18 @@ test('adopts the existing public Serde repository with its original template', (
       visibility: 'public',
     },
   })
+  const ruleset = resources.find(({ name }) => name === 'default-branch-totto2727-org-model')
+  expect(ruleset?.inputs).toMatchObject({
+    repository: 'model',
+    enforcement: 'active',
+    rules: {
+      deletion: true,
+      nonFastForward: true,
+      requiredStatusChecks: { requiredChecks: [{ context: 'check', integrationId: 15_368 }] },
+    },
+  })
+  const alerts = resources.find(({ name }) => name === 'vulnerability-alerts-totto2727-org-model')
+  expect(alerts?.inputs).toMatchObject({ repository: 'model', enabled: true })
 })
 
 test.each(['effect-http', 'effect-identify'])(

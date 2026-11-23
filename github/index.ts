@@ -135,9 +135,9 @@ export const totto2727OrgLensRepositoryName = org.lens.repository.name
 export const totto2727OrgLensRulesetId = org.lens.ruleset.id
 export const totto2727OrgLensVulnerabilityAlertId = org.lens.vulnerabilityAlerts.id
 
-export const totto2727OrgSerdeRepositoryName = org.serde.repository.name
-export const totto2727OrgSerdeRulesetId = org.serde.ruleset.id
-export const totto2727OrgSerdeVulnerabilityAlertId = org.serde.vulnerabilityAlerts.id
+export const totto2727OrgModelRepositoryName = org.model.repository.name
+export const totto2727OrgModelRulesetId = org.model.ruleset.id
+export const totto2727OrgModelVulnerabilityAlertId = org.model.vulnerabilityAlerts.id
 
 export const totto2727OrgWorkgraphRepositoryName = org.workgraph.repository.name
 export const totto2727OrgWorkgraphRulesetId = org.workgraph.ruleset.id
