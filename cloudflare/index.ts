@@ -16,6 +16,8 @@ import './src/zone-settings.ts'
 export {
   cloudflareOsAccessAudience,
   cloudflareOsAccessDomain,
+  openConnectorAccessAudience,
+  openConnectorAccessDomain,
   projektorAccessAudience,
   projektorAccessDomain,
 } from './src/access-application.ts'

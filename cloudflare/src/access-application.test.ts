@@ -11,6 +11,8 @@ const resourceOptions = new Map<string, pulumi.CustomResourceOptions>()
 let outputs: {
   cloudflareOsAccessAudience: string
   cloudflareOsAccessDomain: string
+  openConnectorAccessAudience: string
+  openConnectorAccessDomain: string
   projektorAccessAudience: string
   projektorAccessDomain: string
 }
@@ -54,14 +56,25 @@ beforeAll(async () => {
       .all([
         stack.cloudflareOsAccessAudience,
         stack.cloudflareOsAccessDomain,
+        stack.openConnectorAccessAudience,
+        stack.openConnectorAccessDomain,
         stack.projektorAccessAudience,
         stack.projektorAccessDomain,
       ])
       .apply(
-        ([cloudflareOsAccessAudience, cloudflareOsAccessDomain, projektorAccessAudience, projektorAccessDomain]) => {
+        ([
+          cloudflareOsAccessAudience,
+          cloudflareOsAccessDomain,
+          openConnectorAccessAudience,
+          openConnectorAccessDomain,
+          projektorAccessAudience,
+          projektorAccessDomain,
+        ]) => {
           resolve({
             cloudflareOsAccessAudience,
             cloudflareOsAccessDomain,
+            openConnectorAccessAudience,
+            openConnectorAccessDomain,
             projektorAccessAudience,
             projektorAccessDomain,
           })
@@ -78,13 +91,22 @@ afterAll(() => {
 })
 
 describe('Deployment Access applications', () => {
-  test('protects both fixed hostnames without hostname stack configuration', () => {
+  test('protects the Web hosts and only the OAuth consent paths on the API hosts', () => {
     const applications = resources.filter((resource) => resource.type === applicationType)
-    expect(applications).toHaveLength(2)
+    expect(applications).toHaveLength(3)
 
-    for (const [name, domain] of [
-      ['projektor', 'projektor.totto2727.dev'],
-      ['cloudflare-os', 'cloudflare.totto2727.dev'],
+    for (const { name, domain, additionalDestinations } of [
+      {
+        name: 'projektor',
+        domain: 'projektor.totto2727.dev',
+        additionalDestinations: ['projektor-api.totto2727.dev/oauth/authorize'],
+      },
+      { name: 'cloudflare-os', domain: 'cloudflare.totto2727.dev', additionalDestinations: [] },
+      {
+        name: 'open-connector',
+        domain: 'open-connector.totto2727.dev',
+        additionalDestinations: ['open-connector-api.totto2727.dev/oauth/mcp/authorize'],
+      },
     ]) {
       expect(applications.find((application) => application.name === `iac-prod-${name}`)).toMatchObject({
         inputs: {
@@ -92,7 +114,7 @@ describe('Deployment Access applications', () => {
           allowedIdps: ['id-iac-prod-passkeys-identity-provider'],
           appLauncherVisible: true,
           autoRedirectToIdentity: false,
-          destinations: [{ type: 'public', uri: domain }],
+          destinations: [domain, ...additionalDestinations].map((uri) => ({ type: 'public', uri })),
           domain,
           name: `iac-prod-${name}`,
           policies: [{ id: 'id-iac-prod-must-authenticate-with-passkeys', precedence: 1 }],
@@ -146,7 +168,7 @@ describe('Deployment Access applications', () => {
     })
   })
 
-  test('creates ownership tags once and attaches them to both applications', () => {
+  test('creates ownership tags once and attaches them to all applications', () => {
     const tagNames = [
       'environment:production',
       'managed-by:pulumi',
@@ -178,6 +200,8 @@ describe('Deployment Access applications', () => {
     expect(outputs).toEqual({
       cloudflareOsAccessAudience: 'aud-iac-prod-cloudflare-os',
       cloudflareOsAccessDomain: 'cloudflare.totto2727.dev',
+      openConnectorAccessAudience: 'aud-iac-prod-open-connector',
+      openConnectorAccessDomain: 'open-connector.totto2727.dev',
       projektorAccessAudience: 'aud-iac-prod-projektor',
       projektorAccessDomain: 'projektor.totto2727.dev',
     })

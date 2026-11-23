@@ -37,7 +37,10 @@ export const projektor = new cloudflare.ZeroTrustAccessApplication(
     allowedIdps: [passkeys.id],
     appLauncherVisible: true,
     autoRedirectToIdentity: false,
-    destinations: [{ type: 'public', uri: 'projektor.totto2727.dev' }],
+    destinations: [
+      { type: 'public', uri: 'projektor.totto2727.dev' },
+      { type: 'public', uri: 'projektor-api.totto2727.dev/oauth/authorize' },
+    ],
     domain: 'projektor.totto2727.dev',
     name: config.resourceName('projektor'),
     policies: [{ id: allowPasskeys.id, precedence: 1 }],
@@ -65,7 +68,30 @@ export const cloudflareOs = new cloudflare.ZeroTrustAccessApplication(
   { protect: true },
 )
 
+export const openConnector = new cloudflare.ZeroTrustAccessApplication(
+  config.resourceName('open-connector'),
+  {
+    accountId: config.accountID,
+    allowedIdps: [passkeys.id],
+    appLauncherVisible: true,
+    autoRedirectToIdentity: false,
+    destinations: [
+      { type: 'public', uri: 'open-connector.totto2727.dev' },
+      { type: 'public', uri: 'open-connector-api.totto2727.dev/oauth/mcp/authorize' },
+    ],
+    domain: 'open-connector.totto2727.dev',
+    name: config.resourceName('open-connector'),
+    policies: [{ id: allowPasskeys.id, precedence: 1 }],
+    sessionDuration: '24h',
+    tags: [environmentTag.name, managedByTag.name, pulumiProjectTag.name, pulumiStackTag.name, repositoryTag.name],
+    type: 'self_hosted',
+  },
+  { protect: true },
+)
+
 export const projektorAccessAudience = projektor.aud
 export const projektorAccessDomain = projektor.domain
 export const cloudflareOsAccessAudience = cloudflareOs.aud
 export const cloudflareOsAccessDomain = cloudflareOs.domain
+export const openConnectorAccessAudience = openConnector.aud
+export const openConnectorAccessDomain = openConnector.domain
