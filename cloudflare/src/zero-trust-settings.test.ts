@@ -237,6 +237,10 @@ test('manages the observed disabled strict service-token authentication without 
   expect(options.get('iac-prod-zero-trust-organization')).not.toHaveProperty('ignoreChanges')
 })
 
+test('keeps the imported organization on its existing provider version', () => {
+  expect(options.get('iac-prod-zero-trust-organization')).toHaveProperty('version', '6.23.3')
+})
+
 test('OTP omits computed callbacks and SCIM configuration unsupported by onetimepin', () => {
   const identityProvider = resources.find((resource) => resource.name === 'iac-prod-one-time-pin-identity-provider')
   expect(identityProvider?.inputs).toHaveProperty('config', {})

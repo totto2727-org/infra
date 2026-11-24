@@ -2,8 +2,7 @@ import * as cloudflare from '@pulumi/cloudflare'
 
 import * as config from './config.ts'
 
-// Enforcement stays disabled. The provider requires action/threshold even then;
-// these are explicit inactive defaults, not values read from the account.
+// Cloudflare returns all three inactivity settings even with enforcement disabled.
 export const zeroTrustOrganization = new cloudflare.ZeroTrustOrganization(
   config.resourceName('zero-trust-organization'),
   {
@@ -26,6 +25,10 @@ export const zeroTrustOrganization = new cloudflare.ZeroTrustOrganization(
   {
     import: config.accountID,
     protect: true,
+    // The provider migration alone triggers an organization PUT rejected with
+    // Cloudflare error 12062. Keep the version already managing this singleton
+    // until its migration can be validated.
+    version: '6.23.3',
   },
 )
 
