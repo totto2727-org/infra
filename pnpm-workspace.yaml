@@ -2,6 +2,7 @@ packages:
   - aws
   - cloudflare
   - github
+  - oci-orca
 
 catalogs:
   effect:
@@ -10,6 +11,7 @@ catalogs:
     '@pulumi/aws': ^7.55.0
     '@pulumi/cloudflare': ^6.24.0
     '@pulumi/github': ^6.15.1
+    '@pulumi/oci': 5.8.0
     '@pulumi/pulumi': ^3.277.0
 
 minimumReleaseAge: 1440

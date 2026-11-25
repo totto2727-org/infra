@@ -1,7 +1,7 @@
 {
   "name": "infra",
   "private": true,
-  "description": "Pulumi infrastructure for AWS, Cloudflare, and GitHub",
+  "description": "Pulumi infrastructure for AWS, Cloudflare, GitHub, and Oracle Cloud",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/totto2727-org/infra.git"
