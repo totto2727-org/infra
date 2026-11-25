@@ -39,8 +39,10 @@ beforeAll(async () => {
 
 test.each([
   { repository: 'projektor', contexts: ['check'] },
+  { repository: 'mbtlint', contexts: ['check'] },
   { repository: 'mdts', contexts: ['check'] },
   { repository: 'nix-cache', contexts: ['check'] },
+  { repository: 'decision-kit', contexts: ['check'] },
   { repository: 'effect-http', contexts: ['check'] },
   { repository: 'effect-identify', contexts: ['check'] },
   { repository: 'syntree.mbt', contexts: ['check'] },
@@ -155,3 +157,19 @@ test.each(['effect-http', 'effect-identify'])(
     expect(repository?.provider).toContain('pulumi:providers:github::totto2727-org::id-totto2727-org')
   },
 )
+
+test.each([
+  { name: 'mbtlint', source: 'template-moonbit-simple' },
+  { name: 'decision-kit', source: 'template-vite-plus-lib' },
+])('adopts the public $name repository with its original template', ({ name, source }) => {
+  expect(resources.find((resource) => resource.name === `repository-totto2727-org-${name}`)).toMatchObject({
+    id: name,
+    inputs: {
+      name,
+      hasIssues: true,
+      isTemplate: false,
+      template: { includeAllBranches: false, owner: 'totto2727-org', repository: source },
+      visibility: 'public',
+    },
+  })
+})

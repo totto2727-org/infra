@@ -59,6 +59,10 @@ export const totto2727OrgGlossshiftRepositoryName = org.glossshift.repository.na
 export const totto2727OrgGlossshiftRulesetId = org.glossshift.ruleset.id
 export const totto2727OrgGlossshiftVulnerabilityAlertId = org.glossshift.vulnerabilityAlerts.id
 
+export const totto2727OrgMbtlintRepositoryName = org.mbtlint.repository.name
+export const totto2727OrgMbtlintRulesetId = org.mbtlint.ruleset.id
+export const totto2727OrgMbtlintVulnerabilityAlertId = org.mbtlint.vulnerabilityAlerts.id
+
 export const totto2727OrgMdtsRepositoryName = org.mdts.repository.name
 export const totto2727OrgMdtsRulesetId = org.mdts.ruleset.id
 export const totto2727OrgMdtsVulnerabilityAlertId = org.mdts.vulnerabilityAlerts.id
@@ -106,6 +110,10 @@ export const totto2727OrgOxlintVulnerabilityAlertId = org.oxlint.vulnerabilityAl
 export const totto2727OrgOxlintDocsRepositoryName = org.oxlintDocs.repository.name
 export const totto2727OrgOxlintDocsRulesetId = org.oxlintDocs.ruleset.id
 export const totto2727OrgOxlintDocsVulnerabilityAlertId = org.oxlintDocs.vulnerabilityAlerts.id
+
+export const totto2727OrgDecisionKitRepositoryName = org.decisionKit.repository.name
+export const totto2727OrgDecisionKitRulesetId = org.decisionKit.ruleset.id
+export const totto2727OrgDecisionKitVulnerabilityAlertId = org.decisionKit.vulnerabilityAlerts.id
 
 export const totto2727OrgEffrontRepositoryName = org.effront.repository.name
 export const totto2727OrgEffrontRulesetId = org.effront.ruleset.id
