@@ -1,17 +1,32 @@
 import { core } from '@pulumi/oci'
 import { Config } from '@pulumi/pulumi'
 
+import { registerIpv6, subnet, subnetId } from './network.ts'
+
 const config = new Config()
 const displayName = config.require('displayName')
 const compartmentId = config.require('compartmentId')
 const imageId = config.require('imageId')
-const subnetId = config.require('subnetId')
+const instanceId = config.require('instanceId')
+const availabilityDomain = config.require('availabilityDomain')
+const expectedBootVolumeId = config.require('bootVolumeId')
 const hostnameLabel = config.require('hostnameLabel')
 
-new core.Instance(
+const bootAttachments = core.getBootVolumeAttachmentsOutput({ availabilityDomain, compartmentId, instanceId })
+const bootVolumeId = bootAttachments.bootVolumeAttachments.apply((attachments) => {
+  const attached = attachments.filter((attachment) => attachment.state === 'ATTACHED')
+  const [boot] = attached
+  if (!boot || attached.length !== 1 || boot.bootVolumeId !== expectedBootVolumeId) {
+    throw new Error('The instance must have the configured boot volume attached')
+  }
+  return boot.bootVolumeId
+})
+const bootVolume = core.getBootVolumeOutput({ bootVolumeId })
+
+const instance = new core.Instance(
   'orca',
   {
-    availabilityDomain: config.require('availabilityDomain'),
+    availabilityDomain,
     compartmentId,
     displayName,
     faultDomain: 'FAULT-DOMAIN-3',
@@ -24,17 +39,14 @@ new core.Instance(
     sourceDetails: {
       sourceType: 'image',
       sourceId: imageId,
-      bootVolumeSizeInGbs: '150',
-      bootVolumeVpusPerGb: '10',
+      bootVolumeSizeInGbs: bootVolume.sizeInGbs,
+      bootVolumeVpusPerGb: bootVolume.vpusPerGb,
     },
     createVnicDetails: {
       subnetId,
       displayName,
       hostnameLabel,
       privateIp: config.requireSecret('primaryPrivateIp'),
-      ipv6addressIpv6subnetCidrPairDetails: [
-        { ipv6address: config.requireSecret('ipv6Address'), ipv6id: config.require('ipv6Id') },
-      ],
       definedTags: config.requireSecretObject<Record<string, string>>('vnicDefinedTags'),
     },
     definedTags: config.requireSecretObject<Record<string, string>>('instanceDefinedTags'),
@@ -64,8 +76,9 @@ new core.Instance(
     state: 'RUNNING',
   },
   {
-    import: config.require('instanceId'),
+    import: instanceId,
     protect: true,
+    dependsOn: [subnet],
     additionalSecretOutputs: [
       'createVnicDetails',
       'definedTags',
@@ -76,3 +89,5 @@ new core.Instance(
     ],
   },
 )
+
+registerIpv6(instance)
