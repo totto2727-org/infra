@@ -56,6 +56,10 @@ just cloudflare-preview
 just cloudflare-up
 ```
 
+## WARP API pilot
+
+Follow the [single-host API pilot runbook](./warp-api-pilot.md) to stage and verify the disabled Gateway rule templates.
+
 ## Checks
 
 ```bash

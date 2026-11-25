@@ -1,0 +1,50 @@
+[
+  {
+    "name": "WARP API pilot - OpenConnector action catalog",
+    "action": "allow",
+    "enabled": false,
+    "filters": ["http"],
+    "precedence": 100,
+    "traffic": "http.request.host == \"open-connector.totto2727.workers.dev\" and http.request.uri.path == \"/v1/actions\" and http.request.uri == \"https://open-connector.totto2727.workers.dev/v1/actions\" and http.request.method == \"GET\" and net.onramp.type == \"device_client\"",
+    "identity": "identity.email == \"<PILOT_ENROLLMENT_EMAIL>\"",
+    "device_posture": "any(device_posture.checks.passed[*] in {\"<PILOT_ONE_HOST_POSTURE_CHECK_ID>\"})",
+    "rule_settings": {
+      "untrusted_cert": {
+        "action": "error"
+      },
+      "set_headers": {
+        "Authorization": ["Bearer <OPENCONNECTOR_RUNTIME_TOKEN>"]
+      }
+    }
+  },
+  {
+    "name": "WARP API pilot - AI Gateway OpenAI chat completion",
+    "action": "allow",
+    "enabled": false,
+    "filters": ["http"],
+    "precedence": 110,
+    "traffic": "http.request.host == \"gateway.ai.cloudflare.com\" and http.request.uri.path == \"/v1/5643a837ef66765e7881c0831a36ebed/iac-prod-ai-gateway/openai/chat/completions\" and http.request.uri == \"https://gateway.ai.cloudflare.com/v1/5643a837ef66765e7881c0831a36ebed/iac-prod-ai-gateway/openai/chat/completions\" and http.request.method == \"POST\" and net.onramp.type == \"device_client\"",
+    "identity": "identity.email == \"<PILOT_ENROLLMENT_EMAIL>\"",
+    "device_posture": "any(device_posture.checks.passed[*] in {\"<PILOT_ONE_HOST_POSTURE_CHECK_ID>\"})",
+    "rule_settings": {
+      "untrusted_cert": {
+        "action": "error"
+      },
+      "set_headers": {
+        "cf-aig-authorization": ["Bearer <AI_GATEWAY_RUN_TOKEN>"],
+        "cf-aig-byok-alias": ["<APPROVED_OPENAI_BYOK_ALIAS>"],
+        "cf-aig-no-wholesale": ["true"],
+        "cf-aig-collect-log": ["false"],
+        "cf-aig-skip-cache": ["true"]
+      }
+    }
+  },
+  {
+    "name": "WARP API pilot - block other requests to the pilot endpoints",
+    "action": "block",
+    "enabled": false,
+    "filters": ["http"],
+    "precedence": 120,
+    "traffic": "(http.request.host == \"open-connector.totto2727.workers.dev\" and http.request.uri.path == \"/v1/actions\") or (http.request.host == \"gateway.ai.cloudflare.com\" and http.request.uri.path == \"/v1/5643a837ef66765e7881c0831a36ebed/iac-prod-ai-gateway/openai/chat/completions\")"
+  }
+]
