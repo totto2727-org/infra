@@ -2,7 +2,9 @@ import * as cloudflare from '@pulumi/cloudflare'
 
 import * as config from './config.ts'
 
-// Cloudflare returns all three inactivity settings even with enforcement disabled.
+// Cloudflare requires all three inactivity settings even with enforcement disabled.
+// Use a targeted refresh with --run-program to read disableEndUserAppCreation
+// into state before migrating this organization from provider 6.23.3.
 export const zeroTrustOrganization = new cloudflare.ZeroTrustOrganization(
   config.resourceName('zero-trust-organization'),
   {
@@ -22,14 +24,7 @@ export const zeroTrustOrganization = new cloudflare.ZeroTrustOrganization(
       inactivityThresholdDays: 30,
     },
   },
-  {
-    import: config.accountID,
-    protect: true,
-    // The provider migration alone triggers an organization PUT rejected with
-    // Cloudflare error 12062. Keep the version already managing this singleton
-    // until its migration can be validated.
-    version: '6.23.3',
-  },
+  { import: config.accountID, protect: true },
 )
 
 // Preserve the active certificate binding without adopting its certificate lifecycle.
