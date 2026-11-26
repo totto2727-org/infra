@@ -1,9 +1,8 @@
 import { core } from '@pulumi/oci'
-import { Config } from '@pulumi/pulumi'
 
+import { config, oracleManagedTagPaths } from './config.ts'
 import { hostname, ipv6Address, subnet } from './network.ts'
 
-const config = new Config()
 const imageId = 'ocid1.image.oc1.ap-osaka-1.aaaaaaaaxxnsnjfb24bhltumwaruikf5y5u466curi7bh2rwohmljkztycaa'
 const bootVolumeId = config.require('bootVolumeId')
 
@@ -32,9 +31,9 @@ const instance = new core.Instance(
       displayName: hostname,
       hostnameLabel: hostname,
       privateIp: config.requireSecret('primaryPrivateIp'),
-      definedTags: config.requireSecretObject<Record<string, string>>('vnicDefinedTags'),
+      definedTags: {},
     },
-    definedTags: config.requireSecretObject<Record<string, string>>('instanceDefinedTags'),
+    definedTags: {},
     availabilityConfig: { recoveryAction: 'RESTORE_INSTANCE' },
     instanceOptions: { areLegacyImdsEndpointsDisabled: true },
     agentConfig: {
@@ -63,6 +62,7 @@ const instance = new core.Instance(
   {
     aliases: [{ name: 'orca' }],
     protect: true,
+    ignoreChanges: [...oracleManagedTagPaths, ...oracleManagedTagPaths.map((path) => `createVnicDetails.${path}`)],
     additionalSecretOutputs: [
       'createVnicDetails',
       'definedTags',

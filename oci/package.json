@@ -1,5 +1,5 @@
 {
-  "name": "@infra/oci-orca",
+  "name": "@infra/oci",
   "private": true,
   "type": "module",
   "main": "yachi8000.ts",

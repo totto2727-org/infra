@@ -2,7 +2,7 @@ packages:
   - aws
   - cloudflare
   - github
-  - oci-orca
+  - oci
 
 catalogs:
   effect:

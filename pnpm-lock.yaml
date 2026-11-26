@@ -92,7 +92,7 @@ importers:
         specifier: catalog:effect
         version: 4.1.5
 
-  oci-orca:
+  oci:
     devDependencies:
       '@pulumi/oci':
         specifier: catalog:pulumi

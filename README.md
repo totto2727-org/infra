@@ -5,7 +5,7 @@
 - [AWS: setup and deployment](./aws/README.md)
 - [Cloudflare: setup and deployment](./cloudflare/README.md)
 - [GitHub: App authentication, repository adoption, and policies](./github/README.md)
-- [OCI: adopt the existing Oracle ARM Orca instance](./oci-orca/README.md)
+- [OCI: setup and verification](./oci/README.md)
 
 ## Development
 
@@ -27,7 +27,7 @@ CI does not deploy infrastructure.
 
 Complete the provider setup in the guides above and authenticate with `pulumi login`.
 The `aws`, `cloudflare`, and `github` projects each use a `production` stack and a corresponding Pulumi ESC environment.
-Use the [OCI production verification procedure](./oci-orca/README.md#production-verification) for the adopted instance.
+Use the [OCI production verification procedure](./oci/README.md#production-verification) for the adopted instance.
 Select the `production` stack in each project before using just:
 
 ```bash

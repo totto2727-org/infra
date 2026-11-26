@@ -1,24 +1,18 @@
 import { core } from '@pulumi/oci'
-import { Config } from '@pulumi/pulumi'
 import type { CustomResourceOptions } from '@pulumi/pulumi'
 
-const config = new Config()
+import { config, oracleManagedTagPaths } from './config.ts'
+
 export const hostname = 'yachi8000'
 const network = config.requireSecretObject<{
   vcn: {
     cidrBlocks: [string, ...string[]]
-    definedTags: Record<string, string>
   }
   subnet: {
     cidrBlock: string
     ipv6cidrBlock: string
     ipv6cidrBlocks: string[]
-    definedTags: Record<string, string>
   }
-  internetGateway: { definedTags: Record<string, string> }
-  routeTable: { definedTags: Record<string, string> }
-  securityList: { definedTags: Record<string, string> }
-  dhcp: { definedTags: Record<string, string> }
   ipv6: { ipAddress: string }
 }>('networkInputs')
 
@@ -27,6 +21,8 @@ export const ipv6Address = network.ipv6.ipAddress
 const protectedResourceOptions = (legacyName: string): CustomResourceOptions => ({
   aliases: [{ name: legacyName }],
   protect: true,
+  ignoreChanges: oracleManagedTagPaths,
+  additionalSecretOutputs: ['definedTags'],
 })
 
 const vcn = new core.Vcn(
@@ -35,7 +31,7 @@ const vcn = new core.Vcn(
     compartmentId: config.require('compartmentId'),
     cidrBlock: primaryVcnCidrBlock,
     cidrBlocks: network.vcn.cidrBlocks,
-    definedTags: network.vcn.definedTags,
+    definedTags: {},
     displayName: hostname,
     dnsLabel: hostname,
     isIpv6enabled: true,
@@ -48,7 +44,7 @@ const gateway = new core.InternetGateway(
   {
     compartmentId: vcn.compartmentId,
     vcnId: vcn.id,
-    definedTags: network.internetGateway.definedTags,
+    definedTags: {},
     displayName: hostname,
   },
   protectedResourceOptions('orca-igw'),
@@ -59,7 +55,7 @@ const routeTable = new core.DefaultRouteTable(
   {
     compartmentId: vcn.compartmentId,
     manageDefaultResourceId: vcn.defaultRouteTableId,
-    definedTags: network.routeTable.definedTags,
+    definedTags: {},
     displayName: `Default Route Table for ${hostname}`,
     routeRules: ['0.0.0.0/0', '::/0'].map((destination) => ({
       destination,
@@ -76,7 +72,7 @@ const securityList = new core.DefaultSecurityList(
   {
     compartmentId: vcn.compartmentId,
     manageDefaultResourceId: vcn.defaultSecurityListId,
-    definedTags: network.securityList.definedTags,
+    definedTags: {},
     displayName: `Default Security List for ${hostname}`,
     egressSecurityRules: ['0.0.0.0/0', '::/0'].map((destination) => ({
       destination,
@@ -103,7 +99,7 @@ const dhcp = new core.DefaultDhcpOptions(
   {
     compartmentId: vcn.compartmentId,
     manageDefaultResourceId: vcn.defaultDhcpOptionsId,
-    definedTags: network.dhcp.definedTags,
+    definedTags: {},
     displayName: `Default DHCP Options for ${hostname}`,
     domainNameType: 'CUSTOM_DOMAIN',
     options: [
@@ -123,7 +119,7 @@ export const subnet = new core.Subnet(
     ipv4cidrBlocks: [network.subnet.cidrBlock],
     ipv6cidrBlock: network.subnet.ipv6cidrBlock,
     ipv6cidrBlocks: network.subnet.ipv6cidrBlocks,
-    definedTags: network.subnet.definedTags,
+    definedTags: {},
     displayName: hostname,
     dnsLabel: hostname,
     routeTableId: routeTable.id,

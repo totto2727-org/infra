@@ -1,4 +1,4 @@
-name: oci-orca
+name: oci
 description: Adopt the existing Oracle ARM Orca instance
 runtime:
   name: nodejs
