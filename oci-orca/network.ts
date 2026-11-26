@@ -1,145 +1,134 @@
 import { core } from '@pulumi/oci'
 import { Config } from '@pulumi/pulumi'
-import type { Unwrap } from '@pulumi/pulumi'
+import type { CustomResourceOptions } from '@pulumi/pulumi'
 
 const config = new Config()
-type Tags = Record<string, string>
-
-interface NetworkInputs {
+export const hostname = 'yachi8000'
+const network = config.requireSecretObject<{
   vcn: {
-    cidrBlocks: string[]
-    definedTags: Tags
-    dnsLabel: string
-    displayName: string
+    cidrBlocks: [string, ...string[]]
+    definedTags: Record<string, string>
   }
   subnet: {
     cidrBlock: string
-    ipv4cidrBlocks: string[]
     ipv6cidrBlock: string
     ipv6cidrBlocks: string[]
-    definedTags: Tags
-    dnsLabel: string
-    displayName: string
+    definedTags: Record<string, string>
   }
-  internetGateway: { definedTags: Tags; displayName: string }
-  routeTable: { definedTags: Tags; displayName: string }
-  securityList: Unwrap<Pick<core.DefaultSecurityListArgs, 'egressSecurityRules' | 'ingressSecurityRules'>> & {
-    definedTags: Tags
-    displayName: string
-  }
-  dhcp: Unwrap<Pick<core.DefaultDhcpOptionsArgs, 'options' | 'domainNameType'>> & {
-    definedTags: Tags
-    displayName: string
-  }
-  ipv6: { displayName: string; hostname: string; ipAddress: string }
-}
+  internetGateway: { definedTags: Record<string, string> }
+  routeTable: { definedTags: Record<string, string> }
+  securityList: { definedTags: Record<string, string> }
+  dhcp: { definedTags: Record<string, string> }
+  ipv6: { ipAddress: string }
+}>('networkInputs')
 
-const network = config.requireSecretObject<NetworkInputs>('networkInputs')
-const compartmentId = config.require('compartmentId')
-const vcnId = config.require('vcnId')
-const gatewayId = config.require('gatewayId')
-const routeTableId = config.require('routeTableId')
-const securityListId = config.require('securityListId')
-const dhcpOptionsId = config.require('dhcpOptionsId')
-export const subnetId = config.require('subnetId')
+const primaryVcnCidrBlock = network.vcn.cidrBlocks.apply(([cidrBlock]) => cidrBlock)
+export const ipv6Address = network.ipv6.ipAddress
+const protectedResourceOptions = (legacyName: string): CustomResourceOptions => ({
+  aliases: [{ name: legacyName }],
+  protect: true,
+})
 
 const vcn = new core.Vcn(
-  'orca-vcn',
+  `${hostname}-vcn`,
   {
-    compartmentId,
-    cidrBlock: network.vcn.cidrBlocks[0],
+    compartmentId: config.require('compartmentId'),
+    cidrBlock: primaryVcnCidrBlock,
     cidrBlocks: network.vcn.cidrBlocks,
     definedTags: network.vcn.definedTags,
-    displayName: network.vcn.displayName,
-    dnsLabel: network.vcn.dnsLabel,
+    displayName: hostname,
+    dnsLabel: hostname,
     isIpv6enabled: true,
   },
-  { import: vcnId, protect: true },
+  protectedResourceOptions('orca-vcn'),
 )
 
 const gateway = new core.InternetGateway(
-  'orca-igw',
+  `${hostname}-internet-gateway`,
   {
-    compartmentId,
-    vcnId,
+    compartmentId: vcn.compartmentId,
+    vcnId: vcn.id,
     definedTags: network.internetGateway.definedTags,
-    displayName: network.internetGateway.displayName,
+    displayName: hostname,
   },
-  { import: gatewayId, protect: true, dependsOn: [vcn] },
+  protectedResourceOptions('orca-igw'),
 )
 
 const routeTable = new core.DefaultRouteTable(
-  'orca-route-table',
+  `${hostname}-default-route-table`,
   {
-    compartmentId,
-    manageDefaultResourceId: routeTableId,
+    compartmentId: vcn.compartmentId,
+    manageDefaultResourceId: vcn.defaultRouteTableId,
     definedTags: network.routeTable.definedTags,
-    displayName: network.routeTable.displayName,
+    displayName: `Default Route Table for ${hostname}`,
     routeRules: ['0.0.0.0/0', '::/0'].map((destination) => ({
       destination,
       destinationType: 'CIDR_BLOCK',
-      networkEntityId: gatewayId,
+      networkEntityId: gateway.id,
       routeType: 'STATIC',
     })),
   },
-  { import: routeTableId, protect: true, retainOnDelete: true, dependsOn: [gateway] },
+  { ...protectedResourceOptions('orca-route-table'), retainOnDelete: true },
 )
 
 const securityList = new core.DefaultSecurityList(
-  'orca-security-list',
+  `${hostname}-default-security-list`,
   {
-    compartmentId,
-    manageDefaultResourceId: securityListId,
+    compartmentId: vcn.compartmentId,
+    manageDefaultResourceId: vcn.defaultSecurityListId,
     definedTags: network.securityList.definedTags,
-    displayName: network.securityList.displayName,
-    egressSecurityRules: network.securityList.egressSecurityRules,
-    ingressSecurityRules: network.securityList.ingressSecurityRules,
+    displayName: `Default Security List for ${hostname}`,
+    egressSecurityRules: ['0.0.0.0/0', '::/0'].map((destination) => ({
+      destination,
+      destinationType: 'CIDR_BLOCK',
+      protocol: 'all',
+    })),
+    ingressSecurityRules: [
+      { protocol: '1', source: primaryVcnCidrBlock, sourceType: 'CIDR_BLOCK', icmpOptions: { type: 3 } },
+      { protocol: '58', source: '::/0', sourceType: 'CIDR_BLOCK', icmpOptions: { type: 2, code: 0 } },
+      { protocol: '1', source: '0.0.0.0/0', sourceType: 'CIDR_BLOCK', icmpOptions: { type: 3, code: 4 } },
+      ...['0.0.0.0/0', '::/0'].map((source) => ({
+        protocol: '6',
+        source,
+        sourceType: 'CIDR_BLOCK',
+        tcpOptions: { min: 22, max: 22 },
+      })),
+    ],
   },
-  { import: securityListId, protect: true, retainOnDelete: true, dependsOn: [vcn] },
+  { ...protectedResourceOptions('orca-security-list'), retainOnDelete: true },
 )
 
 const dhcp = new core.DefaultDhcpOptions(
-  'orca-dhcp',
+  `${hostname}-default-dhcp-options`,
   {
-    compartmentId,
-    manageDefaultResourceId: dhcpOptionsId,
+    compartmentId: vcn.compartmentId,
+    manageDefaultResourceId: vcn.defaultDhcpOptionsId,
     definedTags: network.dhcp.definedTags,
-    displayName: network.dhcp.displayName,
-    domainNameType: network.dhcp.domainNameType,
-    options: network.dhcp.options,
+    displayName: `Default DHCP Options for ${hostname}`,
+    domainNameType: 'CUSTOM_DOMAIN',
+    options: [
+      { type: 'SearchDomain', searchDomainNames: [`${hostname}.oraclevcn.com`] },
+      { type: 'DomainNameServer', serverType: 'VcnLocalPlusInternet' },
+    ],
   },
-  { import: dhcpOptionsId, protect: true, retainOnDelete: true, dependsOn: [vcn] },
+  { ...protectedResourceOptions('orca-dhcp'), retainOnDelete: true },
 )
 
 export const subnet = new core.Subnet(
-  'orca-subnet',
+  `${hostname}-subnet`,
   {
-    compartmentId,
-    vcnId,
+    compartmentId: vcn.compartmentId,
+    vcnId: vcn.id,
     cidrBlock: network.subnet.cidrBlock,
-    ipv4cidrBlocks: network.subnet.ipv4cidrBlocks,
+    ipv4cidrBlocks: [network.subnet.cidrBlock],
     ipv6cidrBlock: network.subnet.ipv6cidrBlock,
     ipv6cidrBlocks: network.subnet.ipv6cidrBlocks,
     definedTags: network.subnet.definedTags,
-    displayName: network.subnet.displayName,
-    dnsLabel: network.subnet.dnsLabel,
-    routeTableId,
-    securityListIds: [securityListId],
-    dhcpOptionsId,
+    displayName: hostname,
+    dnsLabel: hostname,
+    routeTableId: routeTable.id,
+    securityListIds: [securityList.id],
+    dhcpOptionsId: dhcp.id,
   },
-  { import: subnetId, protect: true, dependsOn: [routeTable, securityList, dhcp] },
+  protectedResourceOptions('orca-subnet'),
 )
-
-export const registerIpv6 = (instance: core.Instance) =>
-  new core.Ipv6(
-    'orca-ipv6s',
-    {
-      subnetId,
-      vnicId: config.require('primaryVnicId'),
-      ipAddress: network.ipv6.ipAddress,
-      displayName: network.ipv6.displayName,
-      hostname: network.ipv6.hostname,
-      lifetime: 'EPHEMERAL',
-    },
-    { import: config.require('ipv6Id'), protect: true, dependsOn: [instance] },
-  )

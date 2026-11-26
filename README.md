@@ -27,7 +27,7 @@ CI does not deploy infrastructure.
 
 Complete the provider setup in the guides above and authenticate with `pulumi login`.
 The `aws`, `cloudflare`, and `github` projects each use a `production` stack and a corresponding Pulumi ESC environment.
-Follow the [OCI adoption procedure](./oci-orca/README.md) separately after the Orca host migration.
+Use the [OCI production verification procedure](./oci-orca/README.md#production-verification) for the adopted instance.
 Select the `production` stack in each project before using just:
 
 ```bash

@@ -2,7 +2,7 @@
   "name": "@infra/oci-orca",
   "private": true,
   "type": "module",
-  "main": "index.ts",
+  "main": "yachi8000.ts",
   "devDependencies": {
     "@pulumi/oci": "catalog:pulumi",
     "@pulumi/pulumi": "catalog:pulumi"

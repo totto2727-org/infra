@@ -1,32 +1,26 @@
 import { core } from '@pulumi/oci'
 import { Config } from '@pulumi/pulumi'
 
-import { registerIpv6, subnet, subnetId } from './network.ts'
+import { hostname, ipv6Address, subnet } from './network.ts'
 
 const config = new Config()
-const displayName = config.require('displayName')
-const compartmentId = config.require('compartmentId')
-const imageId = config.require('imageId')
-const instanceId = config.require('instanceId')
-const availabilityDomain = config.require('availabilityDomain')
+const imageId = 'ocid1.image.oc1.ap-osaka-1.aaaaaaaaxxnsnjfb24bhltumwaruikf5y5u466curi7bh2rwohmljkztycaa'
 const bootVolumeId = config.require('bootVolumeId')
-const hostnameLabel = config.require('hostnameLabel')
 
 const bootVolume = core.getBootVolumeOutput({ bootVolumeId })
 
 const instance = new core.Instance(
-  'orca',
+  hostname,
   {
-    availabilityDomain,
-    compartmentId,
-    displayName,
-    faultDomain: 'FAULT-DOMAIN-3',
+    availabilityDomain: 'hPLV:AP-OSAKA-1-AD-1',
+    compartmentId: subnet.compartmentId,
+    displayName: hostname,
     shape: 'VM.Standard.A1.Flex',
     shapeConfig: { ocpus: 2, vcpus: 2, memoryInGbs: 12 },
     // The provider records these legacy fields alongside their newer equivalents during import.
-    hostnameLabel,
+    hostnameLabel: hostname,
     image: imageId,
-    subnetId,
+    subnetId: subnet.id,
     sourceDetails: {
       sourceType: 'image',
       sourceId: imageId,
@@ -34,9 +28,9 @@ const instance = new core.Instance(
       bootVolumeVpusPerGb: bootVolume.vpusPerGb,
     },
     createVnicDetails: {
-      subnetId,
-      displayName,
-      hostnameLabel,
+      subnetId: subnet.id,
+      displayName: hostname,
+      hostnameLabel: hostname,
       privateIp: config.requireSecret('primaryPrivateIp'),
       definedTags: config.requireSecretObject<Record<string, string>>('vnicDefinedTags'),
     },
@@ -67,9 +61,8 @@ const instance = new core.Instance(
     state: 'RUNNING',
   },
   {
-    import: instanceId,
+    aliases: [{ name: 'orca' }],
     protect: true,
-    dependsOn: [subnet],
     additionalSecretOutputs: [
       'createVnicDetails',
       'definedTags',
@@ -81,4 +74,15 @@ const instance = new core.Instance(
   },
 )
 
-registerIpv6(instance)
+new core.Ipv6(
+  `${hostname}-ipv6`,
+  {
+    subnetId: subnet.id,
+    vnicId: config.require('primaryVnicId'),
+    ipAddress: ipv6Address,
+    displayName: 'ipv620261125161346',
+    hostname,
+    lifetime: 'EPHEMERAL',
+  },
+  { aliases: [{ name: 'orca-ipv6s' }], protect: true, dependsOn: [instance] },
+)
