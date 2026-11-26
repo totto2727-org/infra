@@ -9,18 +9,9 @@ const compartmentId = config.require('compartmentId')
 const imageId = config.require('imageId')
 const instanceId = config.require('instanceId')
 const availabilityDomain = config.require('availabilityDomain')
-const expectedBootVolumeId = config.require('bootVolumeId')
+const bootVolumeId = config.require('bootVolumeId')
 const hostnameLabel = config.require('hostnameLabel')
 
-const bootAttachments = core.getBootVolumeAttachmentsOutput({ availabilityDomain, compartmentId, instanceId })
-const bootVolumeId = bootAttachments.bootVolumeAttachments.apply((attachments) => {
-  const attached = attachments.filter((attachment) => attachment.state === 'ATTACHED')
-  const [boot] = attached
-  if (!boot || attached.length !== 1 || boot.bootVolumeId !== expectedBootVolumeId) {
-    throw new Error('The instance must have the configured boot volume attached')
-  }
-  return boot.bootVolumeId
-})
 const bootVolume = core.getBootVolumeOutput({ bootVolumeId })
 
 const instance = new core.Instance(
