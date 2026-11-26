@@ -62,6 +62,16 @@ export const flowdeck = createRepository('flowdeck', {
 export const glossshift = createRepository('glossshift', {
   description: 'A macOS translation app and CLI with OpenAI-compatible providers and streaming output',
 })
+export const mbtlint = createRepository(
+  'mbtlint',
+  {
+    description: 'Programmable MoonBit AST linter for lint.mbtx',
+    template: template('template-moonbit-simple'),
+    visibility: 'public',
+  },
+  ['check'],
+  { import: 'mbtlint' },
+)
 export const mdts = createRepository('mdts', { description: 'Application repository for the mdts project' })
 export const nixCache = createRepository('nix-cache', {
   description: 'Authenticated Nix binary cache on Cloudflare Workers and R2',
@@ -156,6 +166,16 @@ export const oxlintDocs = createRepository('oxlint-docs', {
   homepageUrl: 'https://oxlint.totto2727.dev',
   template: template('template-vite-plus-app'),
 })
+export const decisionKit = createRepository(
+  'decision-kit',
+  {
+    description: 'Cached decision model clients for TypeScript and MoonBit',
+    template: template('template-vite-plus-lib'),
+    visibility: 'public',
+  },
+  ['check'],
+  { import: 'decision-kit' },
+)
 export const effront = createRepository('effront', {
   description: 'Effront is a React meta-framework built on Web standards and Effect.',
   fork: 'true',
