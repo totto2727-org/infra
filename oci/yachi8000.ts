@@ -57,7 +57,6 @@ const instance = new core.Instance(
     state: 'RUNNING',
   },
   {
-    aliases: [{ name: 'orca' }],
     protect: true,
     ignoreChanges: [...oracleManagedTagPaths, ...oracleManagedTagPaths.map((path) => `createVnicDetails.${path}`)],
     additionalSecretOutputs: [
@@ -90,5 +89,5 @@ new core.Ipv6(
     lifetime: 'EPHEMERAL',
     freeformTags,
   },
-  { aliases: [{ name: 'orca-ipv6s' }], protect: true, additionalSecretOutputs: ['ipAddress'] },
+  { protect: true, additionalSecretOutputs: ['ipAddress'] },
 )

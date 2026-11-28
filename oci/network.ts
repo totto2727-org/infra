@@ -5,12 +5,11 @@ import { freeformTags, oracleManagedTagPaths } from './config.ts'
 
 export const hostname = 'yachi8000'
 const primaryVcnCidrBlock = '10.0.0.0/24'
-const protectedResourceOptions = (legacyName: string): CustomResourceOptions => ({
-  aliases: [{ name: legacyName }],
+const protectedResourceOptions: CustomResourceOptions = {
   protect: true,
   ignoreChanges: oracleManagedTagPaths,
   additionalSecretOutputs: ['definedTags'],
-})
+}
 
 const vcn = new core.Vcn(
   `${hostname}-vcn`,
@@ -24,7 +23,7 @@ const vcn = new core.Vcn(
     dnsLabel: hostname,
     isIpv6enabled: true,
   },
-  protectedResourceOptions('orca-vcn'),
+  protectedResourceOptions,
 )
 
 const gateway = new core.InternetGateway(
@@ -36,7 +35,7 @@ const gateway = new core.InternetGateway(
     freeformTags,
     displayName: hostname,
   },
-  protectedResourceOptions('orca-igw'),
+  protectedResourceOptions,
 )
 
 const routeTable = new core.DefaultRouteTable(
@@ -54,7 +53,7 @@ const routeTable = new core.DefaultRouteTable(
       routeType: 'STATIC',
     })),
   },
-  { ...protectedResourceOptions('orca-route-table'), retainOnDelete: true },
+  { ...protectedResourceOptions, retainOnDelete: true },
 )
 
 const securityList = new core.DefaultSecurityList(
@@ -82,7 +81,7 @@ const securityList = new core.DefaultSecurityList(
       })),
     ],
   },
-  { ...protectedResourceOptions('orca-security-list'), retainOnDelete: true },
+  { ...protectedResourceOptions, retainOnDelete: true },
 )
 
 const dhcp = new core.DefaultDhcpOptions(
@@ -99,7 +98,7 @@ const dhcp = new core.DefaultDhcpOptions(
       { type: 'DomainNameServer', serverType: 'VcnLocalPlusInternet' },
     ],
   },
-  { ...protectedResourceOptions('orca-dhcp'), retainOnDelete: true },
+  { ...protectedResourceOptions, retainOnDelete: true },
 )
 
 // The subnet uses the first /64 of the Oracle-assigned /56.
@@ -126,5 +125,5 @@ export const subnet = new core.Subnet(
     securityListIds: [securityList.id],
     dhcpOptionsId: dhcp.id,
   },
-  protectedResourceOptions('orca-subnet'),
+  protectedResourceOptions,
 )
