@@ -28,8 +28,12 @@ config_dir=$(mktemp -d)
 config_file="$config_dir/Pulumi.production.yaml"
 cp "${OCI_PRODUCTION_CONFIG:?Set OCI_PRODUCTION_CONFIG}" "$config_file"
 pulumi preview --cwd oci --stack totto2727/oci/production --config-file "$config_file" \
-  --refresh --expect-no-changes --suppress-outputs
+  --refresh --diff --suppress-outputs
 ```
+
+Before the common tags are applied, expect eight in-place updates covering the eight managed resources and the primary VNIC.
+Each change adds five free-form tags.
+Once the tags are applied, add `--expect-no-changes` to check for drift.
 
 Use Tailscale to access the host.
 
