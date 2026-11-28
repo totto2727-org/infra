@@ -73,18 +73,13 @@ const instance = new core.Instance(
   },
 )
 
-const attachments = core.getVnicAttachmentsOutput({ instanceId: instance.id, compartmentId: instance.compartmentId })
-const primaryVnicId = attachments.vnicAttachments.apply(async (items) => {
-  const attached = items.filter((item) => item.state === 'ATTACHED')
-  const vnics = await Promise.all(attached.map(({ vnicId }) => core.getVnic({ vnicId })))
-  return vnics.find((vnic) => vnic.isPrimary)!.vnicId
-})
+const primaryIp = core.getPrivateIpsOutput({ ipAddress: instance.privateIp, subnetId: subnet.id })
 
 new core.Ipv6(
   `${hostname}-ipv6`,
   {
     subnetId: subnet.id,
-    vnicId: primaryVnicId,
+    vnicId: primaryIp.privateIps[0]!.vnicId,
     displayName: `${hostname}-ipv6`,
     hostname,
     lifetime: 'EPHEMERAL',

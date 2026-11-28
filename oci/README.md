@@ -9,7 +9,7 @@
 ## OCI authentication
 
 Configure the local OCI `DEFAULT` profile for `ap-osaka-1` with an API signing key.
-The OCI user needs read access to the managed resources, the instance’s VNIC attachments, and the attached VNICs.
+The OCI user needs read access to the managed resources and the private IP addresses in the subnet.
 Keep the API signing key outside the repository.
 See the [OCI configuration file reference](https://docs.oracle.com/en-us/iaas/Content/API/Concepts/sdkconfig.htm).
 
