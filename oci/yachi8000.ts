@@ -85,7 +85,7 @@ new core.Ipv6(
   {
     subnetId: subnet.id,
     vnicId: primaryVnicId,
-    displayName: 'ipv620261125161346',
+    displayName: `${hostname}-ipv6`,
     hostname,
     lifetime: 'EPHEMERAL',
     freeformTags,
