@@ -17,6 +17,8 @@ See the [OCI configuration file reference](https://docs.oracle.com/en-us/iaas/Co
 
 Keep the production configuration outside the repository.
 Use the `oci` namespace for provider settings and `ociResources` for resource settings.
+Set `ociResources:compartmentId` to the external compartment OCID and store `ociResources:sshAuthorizedKeys` as a Pulumi secret.
+The preview identity also needs permission to list the instance’s VNIC attachments and read their VNICs.
 Set `OCI_PRODUCTION_CONFIG` to the path of the private production configuration file.
 
 ## Production verification

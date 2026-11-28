@@ -4,20 +4,7 @@ import type { CustomResourceOptions } from '@pulumi/pulumi'
 import { config, freeformTags, oracleManagedTagPaths } from './config.ts'
 
 export const hostname = 'yachi8000'
-const network = config.requireSecretObject<{
-  vcn: {
-    cidrBlocks: [string, ...string[]]
-  }
-  subnet: {
-    cidrBlock: string
-    ipv6cidrBlock: string
-    ipv6cidrBlocks: string[]
-  }
-  ipv6: { ipAddress: string }
-}>('networkInputs')
-
-const primaryVcnCidrBlock = network.vcn.cidrBlocks.apply(([cidrBlock]) => cidrBlock)
-export const ipv6Address = network.ipv6.ipAddress
+const primaryVcnCidrBlock = '10.0.0.0/24'
 const protectedResourceOptions = (legacyName: string): CustomResourceOptions => ({
   aliases: [{ name: legacyName }],
   protect: true,
@@ -30,7 +17,7 @@ const vcn = new core.Vcn(
   {
     compartmentId: config.require('compartmentId'),
     cidrBlock: primaryVcnCidrBlock,
-    cidrBlocks: network.vcn.cidrBlocks,
+    cidrBlocks: [primaryVcnCidrBlock],
     definedTags: {},
     freeformTags,
     displayName: hostname,
@@ -115,15 +102,22 @@ const dhcp = new core.DefaultDhcpOptions(
   { ...protectedResourceOptions('orca-dhcp'), retainOnDelete: true },
 )
 
+// The subnet uses the first /64 of the Oracle-assigned /56.
+const subnetIpv6Cidr = vcn.ipv6cidrBlocks.apply((prefixes) => {
+  const [prefix] = prefixes
+  if (prefixes.length !== 1 || !prefix?.endsWith('/56')) throw new Error('Expected one Oracle-assigned IPv6 /56')
+  return prefix.replace(/\/56$/, '/64')
+})
+
 export const subnet = new core.Subnet(
   `${hostname}-subnet`,
   {
     compartmentId: vcn.compartmentId,
     vcnId: vcn.id,
-    cidrBlock: network.subnet.cidrBlock,
-    ipv4cidrBlocks: [network.subnet.cidrBlock],
-    ipv6cidrBlock: network.subnet.ipv6cidrBlock,
-    ipv6cidrBlocks: network.subnet.ipv6cidrBlocks,
+    cidrBlock: primaryVcnCidrBlock,
+    ipv4cidrBlocks: [primaryVcnCidrBlock],
+    ipv6cidrBlock: subnetIpv6Cidr,
+    ipv6cidrBlocks: [subnetIpv6Cidr],
     definedTags: {},
     freeformTags,
     displayName: hostname,

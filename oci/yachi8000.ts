@@ -1,13 +1,9 @@
 import { core } from '@pulumi/oci'
 
 import { config, freeformTags, oracleManagedTagPaths } from './config.ts'
-import { hostname, ipv6Address, subnet } from './network.ts'
+import { hostname, subnet } from './network.ts'
 
 const imageId = 'ocid1.image.oc1.ap-osaka-1.aaaaaaaaxxnsnjfb24bhltumwaruikf5y5u466curi7bh2rwohmljkztycaa'
-const bootVolumeId = config.require('bootVolumeId')
-
-const bootVolume = core.getBootVolumeOutput({ bootVolumeId })
-
 const instance = new core.Instance(
   hostname,
   {
@@ -23,14 +19,13 @@ const instance = new core.Instance(
     sourceDetails: {
       sourceType: 'image',
       sourceId: imageId,
-      bootVolumeSizeInGbs: bootVolume.sizeInGbs,
-      bootVolumeVpusPerGb: bootVolume.vpusPerGb,
+      bootVolumeSizeInGbs: '150',
+      bootVolumeVpusPerGb: '10',
     },
     createVnicDetails: {
       subnetId: subnet.id,
       displayName: hostname,
       hostnameLabel: hostname,
-      privateIp: config.requireSecret('primaryPrivateIp'),
       definedTags: {},
       freeformTags,
     },
@@ -76,16 +71,24 @@ const instance = new core.Instance(
   },
 )
 
+const attachments = core.getVnicAttachmentsOutput({ instanceId: instance.id, compartmentId: instance.compartmentId })
+const primaryVnicId = attachments.vnicAttachments.apply(async (items) => {
+  const attached = items.filter((item) => item.state === 'ATTACHED')
+  const vnics = await Promise.all(attached.map(({ vnicId }) => core.getVnic({ vnicId })))
+  const primary = vnics.filter((vnic) => vnic.isPrimary)
+  if (primary.length !== 1) throw new Error(`Expected one attached primary VNIC, found ${primary.length}`)
+  return primary[0]!.vnicId
+})
+
 new core.Ipv6(
   `${hostname}-ipv6`,
   {
     subnetId: subnet.id,
-    vnicId: config.require('primaryVnicId'),
-    ipAddress: ipv6Address,
+    vnicId: primaryVnicId,
     displayName: 'ipv620261125161346',
     hostname,
     lifetime: 'EPHEMERAL',
     freeformTags,
   },
-  { aliases: [{ name: 'orca-ipv6s' }], protect: true, dependsOn: [instance] },
+  { aliases: [{ name: 'orca-ipv6s' }], protect: true, additionalSecretOutputs: ['ipAddress'] },
 )
