@@ -1,10 +1,11 @@
 # Infrastructure
 
-[totto2727-org/infra](https://github.com/totto2727-org/infra) manages AWS, Cloudflare, and GitHub infrastructure with TypeScript and Pulumi.
+[totto2727-org/infra](https://github.com/totto2727-org/infra) uses TypeScript and Pulumi for AWS, Cloudflare, GitHub, and Oracle Cloud infrastructure.
 
 - [AWS: setup and deployment](./aws/README.md)
 - [Cloudflare: setup and deployment](./cloudflare/README.md)
 - [GitHub: App authentication, repository adoption, and policies](./github/README.md)
+- [OCI: setup and verification](./oci/README.md)
 
 ## Development
 
@@ -25,7 +26,8 @@ CI does not deploy infrastructure.
 ## Deployment
 
 Complete the provider setup in the guides above and authenticate with `pulumi login`.
-The Pulumi projects are `aws`, `cloudflare`, and `github`, each using a `production` stack and its corresponding Pulumi ESC environment.
+The `aws`, `cloudflare`, and `github` projects each use a `production` stack and a corresponding Pulumi ESC environment.
+Use the [OCI production verification procedure](./oci/README.md#production-verification) for the adopted instance.
 Select the `production` stack in each project before using just:
 
 ```bash
