@@ -2,7 +2,7 @@
   "name": "@infra/oci",
   "private": true,
   "type": "module",
-  "main": "yachi8000.ts",
+  "main": "index.ts",
   "devDependencies": {
     "@pulumi/oci": "catalog:pulumi",
     "@pulumi/pulumi": "catalog:pulumi"
