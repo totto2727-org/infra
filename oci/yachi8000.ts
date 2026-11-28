@@ -1,6 +1,6 @@
 import { core } from '@pulumi/oci'
 
-import { config, oracleManagedTagPaths } from './config.ts'
+import { config, freeformTags, oracleManagedTagPaths } from './config.ts'
 import { hostname, ipv6Address, subnet } from './network.ts'
 
 const imageId = 'ocid1.image.oc1.ap-osaka-1.aaaaaaaaxxnsnjfb24bhltumwaruikf5y5u466curi7bh2rwohmljkztycaa'
@@ -32,8 +32,10 @@ const instance = new core.Instance(
       hostnameLabel: hostname,
       privateIp: config.requireSecret('primaryPrivateIp'),
       definedTags: {},
+      freeformTags,
     },
     definedTags: {},
+    freeformTags,
     availabilityConfig: { recoveryAction: 'RESTORE_INSTANCE' },
     instanceOptions: { areLegacyImdsEndpointsDisabled: true },
     agentConfig: {
@@ -83,6 +85,7 @@ new core.Ipv6(
     displayName: 'ipv620261125161346',
     hostname,
     lifetime: 'EPHEMERAL',
+    freeformTags,
   },
   { aliases: [{ name: 'orca-ipv6s' }], protect: true, dependsOn: [instance] },
 )
