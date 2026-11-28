@@ -1,6 +1,4 @@
-import { Config, type CustomResourceOptions, getProject, getStack } from '@pulumi/pulumi'
-
-export const config = new Config('ociResources')
+import { type CustomResourceOptions, getProject, getStack } from '@pulumi/pulumi'
 
 export const freeformTags = {
   environment: 'production',

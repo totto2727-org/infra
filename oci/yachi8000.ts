@@ -1,6 +1,6 @@
 import { core } from '@pulumi/oci'
 
-import { config, freeformTags, protectedResourceOptions } from './config.ts'
+import { freeformTags, protectedResourceOptions } from './config.ts'
 import { hostname, subnet } from './network.ts'
 
 const imageId = 'ocid1.image.oc1.ap-osaka-1.aaaaaaaaxxnsnjfb24bhltumwaruikf5y5u466curi7bh2rwohmljkztycaa'
@@ -53,7 +53,10 @@ const instance = new core.Instance(
       networkType: 'PARAVIRTUALIZED',
       remoteDataVolumeType: 'PARAVIRTUALIZED',
     },
-    metadata: { ssh_authorized_keys: config.requireSecret('sshAuthorizedKeys') },
+    metadata: {
+      ssh_authorized_keys:
+        'ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIOdmfQ2dZm0ry5ieimF79EcGNErSGX4XSApdOrXQe8iR openpgp:0x41B5D669',
+    },
     state: 'RUNNING',
   },
   {

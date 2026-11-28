@@ -13,23 +13,6 @@ The OCI user needs read access to the managed resources and the private IP addre
 Keep the API signing key outside the repository.
 See the [OCI configuration file reference](https://docs.oracle.com/en-us/iaas/Content/API/Concepts/sdkconfig.htm).
 
-## Pulumi ESC
-
-In the `totto2727` organization, configure the ESC environment `oci/production` with the existing SSH authorized keys for the instance.
-Preserve one public key per line, including any options and comments.
-Keep the OCI API signing key in the local OCI profile.
-
-```yaml
-values:
-  pulumiConfig:
-    ociResources:sshAuthorizedKeys:
-      fn::secret: |
-        REPLACE_WITH_EXISTING_SSH_AUTHORIZED_KEYS
-```
-
-The tracked `oci/Pulumi.production.yaml` imports `oci/production` through its `environment` list.
-Grant the preview identity permission to open this environment.
-
 ## Production verification
 
 ```bash
