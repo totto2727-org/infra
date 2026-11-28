@@ -1,7 +1,7 @@
 import { core } from '@pulumi/oci'
 import type { CustomResourceOptions } from '@pulumi/pulumi'
 
-import { config, freeformTags, oracleManagedTagPaths } from './config.ts'
+import { freeformTags, oracleManagedTagPaths } from './config.ts'
 
 export const hostname = 'yachi8000'
 const primaryVcnCidrBlock = '10.0.0.0/24'
@@ -15,7 +15,7 @@ const protectedResourceOptions = (legacyName: string): CustomResourceOptions => 
 const vcn = new core.Vcn(
   `${hostname}-vcn`,
   {
-    compartmentId: config.require('compartmentId'),
+    compartmentId: 'ocid1.tenancy.oc1..aaaaaaaagknwu2moaztjqoxq7sh4it6wgv5kdokhwlemsyjtlbkal33wrjiq',
     cidrBlock: primaryVcnCidrBlock,
     cidrBlocks: [primaryVcnCidrBlock],
     definedTags: {},

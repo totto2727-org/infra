@@ -1,2 +1,2 @@
-config:
-  oci:region: ap-osaka-1
+environment:
+  - oci/production
