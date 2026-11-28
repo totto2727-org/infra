@@ -1,6 +1,6 @@
 import { core } from '@pulumi/oci'
 
-import { config, freeformTags, oracleManagedTagPaths } from './config.ts'
+import { config, freeformTags, protectedResourceOptions } from './config.ts'
 import { hostname, subnet } from './network.ts'
 
 const imageId = 'ocid1.image.oc1.ap-osaka-1.aaaaaaaaxxnsnjfb24bhltumwaruikf5y5u466curi7bh2rwohmljkztycaa'
@@ -57,11 +57,14 @@ const instance = new core.Instance(
     state: 'RUNNING',
   },
   {
-    protect: true,
-    ignoreChanges: [...oracleManagedTagPaths, ...oracleManagedTagPaths.map((path) => `createVnicDetails.${path}`)],
+    ...protectedResourceOptions,
+    ignoreChanges: [
+      ...protectedResourceOptions.ignoreChanges,
+      ...protectedResourceOptions.ignoreChanges.map((path) => `createVnicDetails.${path}`),
+    ],
     additionalSecretOutputs: [
+      ...protectedResourceOptions.additionalSecretOutputs,
       'createVnicDetails',
-      'definedTags',
       'extendedMetadata',
       'metadata',
       'privateIp',
@@ -74,9 +77,7 @@ const attachments = core.getVnicAttachmentsOutput({ instanceId: instance.id, com
 const primaryVnicId = attachments.vnicAttachments.apply(async (items) => {
   const attached = items.filter((item) => item.state === 'ATTACHED')
   const vnics = await Promise.all(attached.map(({ vnicId }) => core.getVnic({ vnicId })))
-  const primary = vnics.filter((vnic) => vnic.isPrimary)
-  if (primary.length !== 1) throw new Error(`Expected one attached primary VNIC, found ${primary.length}`)
-  return primary[0]!.vnicId
+  return vnics.find((vnic) => vnic.isPrimary)!.vnicId
 })
 
 new core.Ipv6(

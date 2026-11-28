@@ -1,4 +1,4 @@
-import { Config, getProject, getStack } from '@pulumi/pulumi'
+import { Config, type CustomResourceOptions, getProject, getStack } from '@pulumi/pulumi'
 
 export const config = new Config('ociResources')
 
@@ -12,4 +12,10 @@ export const freeformTags = {
 
 // OCI assigns these tags when it creates a resource. An empty definedTags map
 // gives Pulumi a parent path for restoring the ignored keys from state.
-export const oracleManagedTagPaths = ['definedTags["Oracle-Tags.CreatedBy"]', 'definedTags["Oracle-Tags.CreatedOn"]']
+const oracleManagedTagPaths = ['definedTags["Oracle-Tags.CreatedBy"]', 'definedTags["Oracle-Tags.CreatedOn"]']
+
+export const protectedResourceOptions = {
+  protect: true,
+  ignoreChanges: oracleManagedTagPaths,
+  additionalSecretOutputs: ['definedTags'],
+} satisfies CustomResourceOptions

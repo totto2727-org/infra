@@ -1,15 +1,9 @@
 import { core } from '@pulumi/oci'
-import type { CustomResourceOptions } from '@pulumi/pulumi'
 
-import { freeformTags, oracleManagedTagPaths } from './config.ts'
+import { freeformTags, protectedResourceOptions } from './config.ts'
 
 export const hostname = 'yachi8000'
 const primaryVcnCidrBlock = '10.0.0.0/24'
-const protectedResourceOptions: CustomResourceOptions = {
-  protect: true,
-  ignoreChanges: oracleManagedTagPaths,
-  additionalSecretOutputs: ['definedTags'],
-}
 
 const vcn = new core.Vcn(
   `${hostname}-vcn`,
@@ -102,11 +96,7 @@ const dhcp = new core.DefaultDhcpOptions(
 )
 
 // The subnet uses the first /64 of the Oracle-assigned /56.
-const subnetIpv6Cidr = vcn.ipv6cidrBlocks.apply((prefixes) => {
-  const [prefix] = prefixes
-  if (prefixes.length !== 1 || !prefix?.endsWith('/56')) throw new Error('Expected one Oracle-assigned IPv6 /56')
-  return prefix.replace(/\/56$/, '/64')
-})
+const subnetIpv6Cidr = vcn.ipv6cidrBlocks.apply(([prefix]) => prefix!.replace('/56', '/64'))
 
 export const subnet = new core.Subnet(
   `${hostname}-subnet`,
